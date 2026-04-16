@@ -15,16 +15,14 @@ class GroupsScreen extends StatelessWidget {
           SliverAppBar(
             pinned: true,
             backgroundColor: scheme.primary,
-            title: Text('Groups',
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700, color: Colors.white)),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.group_add_outlined, color: Colors.white),
-                onPressed: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const CreateGroupScreen())),
-              ),
-            ],
+            title: Text('Groups', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white)),
+            // actions: [
+            //   IconButton(
+            //     icon: const Icon(Icons.group_add_outlined, color: Colors.white),
+            //     onPressed: () => Navigator.push(context,
+            //         MaterialPageRoute(builder: (_) => const CreateGroupScreen())),
+            //   ),
+            // ],
           ),
           Consumer<FriendsProvider>(builder: (context, provider, _) {
             return SliverPadding(
@@ -33,13 +31,11 @@ class GroupsScreen extends StatelessWidget {
                 stream: provider.getGroupData(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SliverFillRemaining(
-                        child: Center(child: CircularProgressIndicator()));
+                    return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
                   }
                   final groups = snapshot.data;
                   if (groups == null || groups.isEmpty) {
-                    return SliverFillRemaining(
-                        child: _buildEmpty(scheme));
+                    return SliverFillRemaining(child: _buildEmpty(scheme));
                   }
                   return SliverList(
                     delegate: SliverChildBuilderDelegate(
@@ -54,11 +50,9 @@ class GroupsScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const CreateGroupScreen())),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateGroupScreen())),
         icon: const Icon(Icons.group_add_outlined),
-        label: Text('New Group',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        label: Text('New Group', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         backgroundColor: scheme.primary,
         foregroundColor: Colors.white,
       ),
@@ -79,20 +73,14 @@ class GroupsScreen extends StatelessWidget {
               child: Icon(Icons.group_outlined, size: 44, color: scheme.primary),
             ),
             const SizedBox(height: 20),
-            Text('No groups yet',
-                style: GoogleFonts.inter(
-                    fontSize: 20, fontWeight: FontWeight.w700)),
+            Text('No groups yet', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            Text('Create a group to split expenses together',
-                style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: scheme.onSurface.withOpacity(0.5))),
+            Text('Create a group to split expenses together', style: GoogleFonts.inter(fontSize: 14, color: scheme.onSurface.withOpacity(0.5))),
           ],
         ),
       );
 
-  Widget _buildGroupCard(
-      BuildContext context, GroupModel group, FriendsProvider provider) {
+  Widget _buildGroupCard(BuildContext context, GroupModel group, FriendsProvider provider) {
     final scheme = Theme.of(context).colorScheme;
     return Dismissible(
       key: Key(group.groupId),
@@ -102,8 +90,7 @@ class GroupsScreen extends StatelessWidget {
         provider.deleteGroup(group.groupId);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${group.groupName} deleted',
-                style: GoogleFonts.inter()),
+            content: Text('${group.groupName} deleted', style: GoogleFonts.inter()),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -123,16 +110,10 @@ class GroupsScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4))
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           leading: Container(
             width: 48,
             height: 48,
@@ -146,33 +127,23 @@ class GroupsScreen extends StatelessWidget {
             ),
             child: const Icon(Icons.group, color: Colors.white, size: 24),
           ),
-          title: Text(group.groupName,
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+          title: Text(group.groupName, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
           subtitle: Row(
             children: [
               Container(
                 margin: const EdgeInsets.only(top: 4),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: scheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(group.groupType,
-                    style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: scheme.primary)),
+                child: Text(group.groupType, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: scheme.primary)),
               ),
               const SizedBox(width: 8),
-              Text('${group.friends.length} members',
-                  style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: scheme.onSurface.withOpacity(0.45))),
+              Text('${group.friends.length} members', style: GoogleFonts.inter(fontSize: 12, color: scheme.onSurface.withOpacity(0.45))),
             ],
           ),
-          trailing:
-              Icon(Icons.chevron_right, color: scheme.onSurface.withOpacity(0.3)),
+          trailing: Icon(Icons.chevron_right, color: scheme.onSurface.withOpacity(0.3)),
           onTap: () => _showGroupDetails(context, group, provider),
         ),
       ),
@@ -183,23 +154,16 @@ class GroupsScreen extends StatelessWidget {
         context: context,
         builder: (_) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Delete Group?',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          title: Text('Delete Group?', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           content: Text('This cannot be undone.', style: GoogleFonts.inter()),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text('Cancel', style: GoogleFonts.inter())),
-            TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text('Delete',
-                    style: GoogleFonts.inter(color: Colors.red))),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: GoogleFonts.inter())),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Delete', style: GoogleFonts.inter(color: Colors.red))),
           ],
         ),
       );
 
-  void _showGroupDetails(BuildContext context, GroupModel group,
-      FriendsProvider provider) async {
+  void _showGroupDetails(BuildContext context, GroupModel group, FriendsProvider provider) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -216,17 +180,14 @@ class GroupsScreen extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(group.groupName,
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+        title: Text(group.groupName, style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Type: ${group.groupType}',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+            Text('Type: ${group.groupType}', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
             const SizedBox(height: 10),
-            Text('Members:',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+            Text('Members:', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             ...names.map((n) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
@@ -238,12 +199,7 @@ class GroupsScreen extends StatelessWidget {
                 )),
           ],
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Close',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600)))
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('Close', style: GoogleFonts.inter(fontWeight: FontWeight.w600)))],
       ),
     );
   }

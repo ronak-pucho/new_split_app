@@ -18,6 +18,7 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
   final _fNameCtrl = TextEditingController();
   final _lNameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+  final _upiCtrl = TextEditingController();
   bool _loading = false;
 
   @override
@@ -36,15 +37,14 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
             fName: _fNameCtrl.text.trim(),
             lName: _lNameCtrl.text.trim(),
             fPhoneNumber: _phoneCtrl.text.trim(),
+            fUpiId: _upiCtrl.text.trim(),
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text('Friend added successfully! 🎉', style: GoogleFonts.inter()),
+        content: Text('Friend added successfully! 🎉', style: GoogleFonts.inter()),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ));
       Navigator.pop(context);
     } catch (_) {
@@ -64,8 +64,7 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Friend',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+        title: Text('Add Friend', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         leading: const BackButton(),
       ),
       body: SingleChildScrollView(
@@ -88,31 +87,23 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
                     ),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.person_add_outlined,
-                      color: Colors.white, size: 34),
+                  child: const Icon(Icons.person_add_outlined, color: Colors.white, size: 34),
                 ),
               ),
               const SizedBox(height: 20),
               Center(
-                child: Text('New Friend',
-                    style: GoogleFonts.inter(
-                        fontSize: 22, fontWeight: FontWeight.w700)),
+                child: Text('New Friend', style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(height: 4),
               Center(
-                child: Text('Fill in the details below',
-                    style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: scheme.onSurface.withOpacity(0.5))),
+                child: Text('Fill in the details below', style: GoogleFonts.inter(fontSize: 13, color: scheme.onSurface.withOpacity(0.5))),
               ),
               const SizedBox(height: 32),
               AppTextField(
                 controller: _fNameCtrl,
                 label: 'First Name',
                 prefixIcon: Icons.person_outline,
-                validator: (v) => v == null || v.trim().isEmpty
-                    ? 'First name is required'
-                    : null,
+                validator: (v) => v == null || v.trim().isEmpty ? 'First name is required' : null,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 16),
@@ -120,9 +111,7 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
                 controller: _lNameCtrl,
                 label: 'Last Name',
                 prefixIcon: Icons.person_outline,
-                validator: (v) => v == null || v.trim().isEmpty
-                    ? 'Last name is required'
-                    : null,
+                validator: (v) => v == null || v.trim().isEmpty ? 'Last name is required' : null,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 16),
@@ -134,17 +123,24 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(10),
                 ],
-                validator: (v) => v == null || v.trim().isEmpty
-                    ? 'Phone number is required'
-                    : null,
+                validator: (v) => v == null || v.trim().isEmpty ? 'Phone number is required' : null,
                 style: GoogleFonts.inter(fontSize: 14),
                 decoration: InputDecoration(
                   labelText: 'Mobile Number',
-                  prefixIcon: Icon(Icons.phone_outlined,
-                      size: 20, color: scheme.primary),
-                  labelStyle: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: scheme.onSurface.withOpacity(0.6)),
+                  prefixIcon: Icon(Icons.phone_outlined, size: 20, color: scheme.primary),
+                  labelStyle: GoogleFonts.inter(fontSize: 13, color: scheme.onSurface.withOpacity(0.6)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _upiCtrl,
+                textInputAction: TextInputAction.done,
+                validator: (v) => v == null || v.trim().isEmpty ? 'UPI ID is required' : null,
+                style: GoogleFonts.inter(fontSize: 14),
+                decoration: InputDecoration(
+                  labelText: 'UPI ID',
+                  prefixIcon: Icon(Icons.payment, size: 20, color: scheme.primary),
+                  labelStyle: GoogleFonts.inter(fontSize: 13, color: scheme.onSurface.withOpacity(0.6)),
                 ),
               ),
               const SizedBox(height: 36),

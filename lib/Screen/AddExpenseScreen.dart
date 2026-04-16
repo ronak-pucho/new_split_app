@@ -52,17 +52,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         fName: _selectedFriend!.fName,
         lName: _selectedFriend!.lName,
         fPhoneNumber: _selectedFriend!.fPhoneNumber,
+        fUpiId: _selectedFriend!.fUpiId,
         description: _descCtrl.text.trim(),
         amount: int.tryParse(_amountCtrl.text.trim()) ?? 0,
         members: int.tryParse(_memberCtrl.text.trim()) ?? 1,
       );
-      await context
-          .read<FriendsProvider>()
-          .setFireStoreExpanse(friendsModel: updatedFriend);
+      await context.read<FriendsProvider>().setFireStoreExpanse(friendsModel: updatedFriend);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text('Expense added successfully!', style: GoogleFonts.inter()),
+        content: Text('Expense added successfully!', style: GoogleFonts.inter()),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -85,8 +83,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Expense',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+        title: Text('Add Expense', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         leading: const BackButton(),
       ),
       body: SingleChildScrollView(
@@ -98,11 +95,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             children: [
               // ── Search friend ──────────────────────────────────────────
               Text('With you and:',
-                  style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface.withOpacity(0.55),
-                      letterSpacing: 0.8)),
+                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: scheme.onSurface.withOpacity(0.55), letterSpacing: 0.8)),
               const SizedBox(height: 10),
               AppTextField(
                 controller: _searchCtrl,
@@ -111,13 +104,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 onChanged: (val) {
                   context.read<SearchProvider>().searchEvent(
                         val.trim().toLowerCase(),
-                        context
-                            .read<FriendsProvider>()
-                            .getFriend()
-                            .map((e) => joinString(e.fName, e.lName)
-                                .trim()
-                                .toLowerCase())
-                            .toList(),
+                        context.read<FriendsProvider>().getFriend().map((e) => joinString(e.fName, e.lName).trim().toLowerCase()).toList(),
                       );
                 },
               ),
@@ -126,37 +113,26 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               // ── Search results ─────────────────────────────────────────
               Consumer<SearchProvider>(builder: (ctx, searchProv, _) {
                 if (searchProv.searchResult.isEmpty) {
-                  return _selectedFriend != null
-                      ? _selectedFriendChip(scheme)
-                      : const SizedBox.shrink();
+                  return _selectedFriend != null ? _selectedFriendChip(scheme) : const SizedBox.shrink();
                 }
                 return Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withOpacity(0.07),
-                          blurRadius: 10)
-                    ],
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 10)],
                   ),
                   child: Column(
                     children: searchProv.searchResult.map((name) {
-                      final friend = context
-                          .read<FriendsProvider>()
-                          .addSearchData(name);
+                      final friend = context.read<FriendsProvider>().addSearchData(name);
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: scheme.primary.withOpacity(0.15),
                           child: Text(
                             name[0].toUpperCase(),
-                            style: TextStyle(
-                                color: scheme.primary,
-                                fontWeight: FontWeight.w700),
+                            style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w700),
                           ),
                         ),
-                        title: Text(name.split(' ').map((w) =>
-                            w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
+                        title: Text(name.split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
                             style: GoogleFonts.inter()),
                         onTap: () {
                           setState(() {
@@ -175,23 +151,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
               // ── Expense form ───────────────────────────────────────────
               Text('Expense Details',
-                  style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface.withOpacity(0.55),
-                      letterSpacing: 0.8)),
+                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: scheme.onSurface.withOpacity(0.55), letterSpacing: 0.8)),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4))
-                  ],
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
                 ),
                 child: Column(
                   children: [
@@ -199,9 +166,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       controller: _descCtrl,
                       label: 'Description',
                       prefixIcon: Icons.description_outlined,
-                      validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Description is required'
-                          : null,
+                      validator: (v) => v == null || v.trim().isEmpty ? 'Description is required' : null,
                       textInputAction: TextInputAction.next,
                     ),
                     const SizedBox(height: 16),
@@ -234,10 +199,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               ),
 
               // ── Preview ────────────────────────────────────────────────
-              if (_selectedFriend != null &&
-                  _amountCtrl.text.isNotEmpty &&
-                  _memberCtrl.text.isNotEmpty)
-                _buildPreview(scheme),
+              if (_selectedFriend != null && _amountCtrl.text.isNotEmpty && _memberCtrl.text.isNotEmpty) _buildPreview(scheme),
 
               const SizedBox(height: 32),
               AppButton(
@@ -256,8 +218,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   Widget _selectedFriendChip(ColorScheme scheme) => Container(
         margin: const EdgeInsets.only(bottom: 8),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: scheme.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
@@ -269,14 +230,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             const SizedBox(width: 8),
             Text(
               '${_selectedFriend!.fName} ${_selectedFriend!.lName}',
-              style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w600, color: scheme.primary),
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: scheme.primary),
             ),
             const SizedBox(width: 6),
             GestureDetector(
               onTap: () => setState(() => _selectedFriend = null),
-              child: Icon(Icons.close_rounded,
-                  size: 16, color: scheme.primary),
+              child: Icon(Icons.close_rounded, size: 16, color: scheme.primary),
             ),
           ],
         ),
@@ -309,18 +268,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-  Widget _previewStat(String label, String value, ColorScheme scheme) =>
-      Column(
+  Widget _previewStat(String label, String value, ColorScheme scheme) => Column(
         children: [
-          Text(value,
-              style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                  color: scheme.primary)),
+          Text(value, style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: scheme.primary)),
           const SizedBox(height: 2),
-          Text(label,
-              style: GoogleFonts.inter(
-                  fontSize: 11, color: scheme.onSurface.withOpacity(0.5))),
+          Text(label, style: GoogleFonts.inter(fontSize: 11, color: scheme.onSurface.withOpacity(0.5))),
         ],
       );
 }

@@ -11,6 +11,7 @@ class FriendsProvider extends ChangeNotifier {
     required String fName,
     required String lName,
     required String fPhoneNumber,
+    required String fUpiId,
   }) async {
     final fId = DateTime.now().millisecondsSinceEpoch.toString();
     final friendModel = FriendsModel(
@@ -19,31 +20,23 @@ class FriendsProvider extends ChangeNotifier {
       fName: fName,
       lName: lName,
       fPhoneNumber: fPhoneNumber,
+      fUpiId: fUpiId,
     );
-    await FirebaseFirestore.instance
-        .collection('friends')
-        .doc(fId)
-        .set(friendModel.toJson());
+    await FirebaseFirestore.instance.collection('friends').doc(fId).set(friendModel.toJson());
     await getAllFriends();
   }
 
   Future<void> setFireStoreExpanse({required FriendsModel friendsModel}) async {
-    await FirebaseFirestore.instance
-        .collection('friends')
-        .doc(friendsModel.fId)
-        .update(friendsModel.toJson());
+    await FirebaseFirestore.instance.collection('friends').doc(friendsModel.fId).update(friendsModel.toJson());
     await getAllFriends();
     notifyListeners();
   }
 
   Future<void> getAllFriends() async {
-    final getFriends = await FirebaseFirestore.instance
-        .collection('friends')
-        .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-        .get();
+    final getFriends =
+        await FirebaseFirestore.instance.collection('friends').where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid).get();
     if (getFriends.docs.isNotEmpty) {
-      friends =
-          getFriends.docs.map((e) => FriendsModel.fromJson(e.data())).toList();
+      friends = getFriends.docs.map((e) => FriendsModel.fromJson(e.data())).toList();
     } else {
       friends = [];
     }
@@ -51,23 +44,17 @@ class FriendsProvider extends ChangeNotifier {
   }
 
   List<FriendsModel> getFriend() {
-    return friends
-        .where((element) => element.isFriendsDelete == false)
-        .toList();
+    return friends.where((element) => element.isFriendsDelete == false).toList();
   }
 
   List<FriendsModel> getExpense() {
-    return getFriendsExpenses()
-        .where((element) => element.isExpenseDelete == false)
-        .toList();
+    return getFriendsExpenses().where((element) => element.isExpenseDelete == false).toList();
   }
 
   FriendsModel? addSearchData(String searchData) {
     final matchingFriends = friends
         .where(
-          (element) =>
-              '${element.fName.trim().toLowerCase()} ${element.lName.trim().toLowerCase()}' ==
-              searchData.trim().toLowerCase(),
+          (element) => '${element.fName.trim().toLowerCase()} ${element.lName.trim().toLowerCase()}' == searchData.trim().toLowerCase(),
         )
         .toList();
 
@@ -79,19 +66,11 @@ class FriendsProvider extends ChangeNotifier {
   }
 
   List<FriendsModel> getFriendsExpenses() {
-    return friends
-        .where((element) =>
-            element.amount != null &&
-            element.description != null &&
-            element.members != null)
-        .toList();
+    return friends.where((element) => element.amount != null && element.description != null && element.members != null).toList();
   }
 
   Future<void> setFirebaseGroupData(GroupModel groupModel) async {
-    await FirebaseFirestore.instance
-        .collection('groups')
-        .doc(groupModel.groupId)
-        .set(groupModel.toJson());
+    await FirebaseFirestore.instance.collection('groups').doc(groupModel.groupId).set(groupModel.toJson());
     notifyListeners();
   }
 
@@ -128,8 +107,7 @@ class FriendsProvider extends ChangeNotifier {
   }
 
   Future<String?> getFriendNameById(String id) async {
-    final doc =
-        await FirebaseFirestore.instance.collection('friends').doc(id).get();
+    final doc = await FirebaseFirestore.instance.collection('friends').doc(id).get();
     if (doc.exists) {
       final friend = FriendsModel.fromJson(doc.data()!);
       return '${friend.fName} ${friend.lName}';

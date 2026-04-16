@@ -4,6 +4,7 @@ class FriendsModel {
   String fName;
   String lName;
   String fPhoneNumber;
+  String fUpiId;
   String? description;
   int? amount;
   int? members;
@@ -16,6 +17,7 @@ class FriendsModel {
     required this.fName,
     required this.lName,
     required this.fPhoneNumber,
+    required this.fUpiId,
     this.description,
     this.isExpenseDelete = false,
     this.isFriendsDelete = false,
@@ -30,6 +32,7 @@ class FriendsModel {
         fName: json['fName'] as String? ?? '',
         lName: json['lName'] as String? ?? '',
         fPhoneNumber: json['fPhoneNumber'] as String? ?? '',
+        fUpiId: json['fUpiId'] as String? ?? '',
         description: json['description'] as String?,
         amount: (json['amount'] as num?)?.toInt(),
         members: (json['members'] as num?)?.toInt(),
@@ -45,6 +48,7 @@ class FriendsModel {
         'fName': fName,
         'lName': lName,
         'fPhoneNumber': fPhoneNumber,
+        'fUpiId': fUpiId,
         'description': description,
         'amount': amount,
         'members': members,

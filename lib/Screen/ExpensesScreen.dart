@@ -24,18 +24,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           SliverAppBar(
             pinned: true,
             backgroundColor: scheme.primary,
-            title: Text('Expenses',
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700, color: Colors.white)),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-                onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const AddExpenseScreen())),
-              ),
-            ],
+            title: Text('Expenses', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white)),
+            // actions: [
+            //   IconButton(
+            //     icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+            //     onPressed: () => Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //             builder: (_) => const AddExpenseScreen())),
+            //   ),
+            // ],
           ),
           expenses.isEmpty
               ? SliverFillRemaining(child: _buildEmpty(scheme))
@@ -51,12 +49,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddExpenseScreen())),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddExpenseScreen())),
         icon: const Icon(Icons.add),
-        label: Text('Add Expense',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        label: Text('Add Expense', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         backgroundColor: scheme.primary,
         foregroundColor: Colors.white,
       ),
@@ -74,18 +69,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 color: scheme.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.receipt_long_outlined,
-                  size: 44, color: scheme.primary),
+              child: Icon(Icons.receipt_long_outlined, size: 44, color: scheme.primary),
             ),
             const SizedBox(height: 20),
-            Text('No expenses yet',
-                style: GoogleFonts.inter(
-                    fontSize: 20, fontWeight: FontWeight.w700)),
+            Text('No expenses yet', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            Text('Add an expense to get started',
-                style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: scheme.onSurface.withOpacity(0.5))),
+            Text('Add an expense to get started', style: GoogleFonts.inter(fontSize: 14, color: scheme.onSurface.withOpacity(0.5))),
           ],
         ),
       );
@@ -93,10 +82,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   Widget _buildExpenseCard(BuildContext context, dynamic expense) {
     final provider = context.read<FriendsProvider>();
     final scheme = Theme.of(context).colorScheme;
-    final perHead =
-        expense.amount != null && expense.members != null
-            ? divideAmount(expense.amount!, expense.members!)
-            : 0.0;
+    final perHead = expense.amount != null && expense.members != null ? divideAmount(expense.amount!, expense.members!) : 0.0;
 
     return Dismissible(
       key: Key('exp_${expense.fId}_${expense.description}'),
@@ -118,12 +104,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4))
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -150,9 +131,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                         expense.description ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: scheme.onSurface.withOpacity(0.5)),
+                        style: GoogleFonts.inter(fontSize: 12, color: scheme.onSurface.withOpacity(0.5)),
                       ),
                     ],
                   ),
@@ -162,17 +141,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   children: [
                     Text(
                       '₹${expense.amount}',
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                          color: scheme.primary),
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: scheme.primary),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '₹${perHead.toStringAsFixed(2)}/each',
-                      style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: scheme.onSurface.withOpacity(0.45)),
+                      style: GoogleFonts.inter(fontSize: 11, color: scheme.onSurface.withOpacity(0.45)),
                     ),
                   ],
                 ),
@@ -187,19 +161,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   Future<bool?> _confirmDelete(BuildContext context) => showDialog<bool>(
         context: context,
         builder: (_) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Delete Expense?',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Delete Expense?', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           content: Text('This cannot be undone.', style: GoogleFonts.inter()),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text('Cancel', style: GoogleFonts.inter())),
-            TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text('Delete',
-                    style: GoogleFonts.inter(color: Colors.red))),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: GoogleFonts.inter())),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Delete', style: GoogleFonts.inter(color: Colors.red))),
           ],
         ),
       );
@@ -210,36 +177,28 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(joinString(expense.fName, expense.lName),
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+        title: Text(joinString(expense.fName, expense.lName), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _detailRow(context, 'Amount', '₹${expense.amount}'),
             _detailRow(context, 'Members', '${expense.members}'),
-            _detailRow(
-                context,
-                'Per Person',
-                '₹${divideAmount(expense.amount!, expense.members!).toStringAsFixed(2)}'),
+            _detailRow(context, 'Per Person', '₹${divideAmount(expense.amount!, expense.members!).toStringAsFixed(2)}'),
             const SizedBox(height: 8),
             Divider(color: scheme.primary.withOpacity(0.3)),
             const SizedBox(height: 4),
-            Text(expense.description ?? '',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 13)),
+            Text(expense.description ?? '', textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 13)),
             const SizedBox(height: 8),
             Text(
               'Paid by ${joinString(expense.fName, expense.lName)}',
-              style: GoogleFonts.inter(
-                  color: scheme.primary, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(color: scheme.primary, fontWeight: FontWeight.w600),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+            child: Text('Close', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -252,12 +211,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: GoogleFonts.inter(
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
-          Text(value,
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+          Text(label, style: GoogleFonts.inter(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
+          Text(value, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         ],
       ),
     );
