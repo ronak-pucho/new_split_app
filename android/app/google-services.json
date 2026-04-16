@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "636270046662",
+    "project_id": "split-app-1225",
+    "storage_bucket": "split-app-1225.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636270046662:android:11ace6bf3ef7bd947516c7",
+        "android_client_info": {
+          "package_name": "com.example.we_spilit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRO-IHEvGWvxNcOmIOKYfR4HAmdy-9wBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
