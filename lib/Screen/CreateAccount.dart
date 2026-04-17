@@ -45,8 +45,7 @@ class _CreateAccountState extends State<CreateAccount> {
     try {
       final authProvider = context.read<AuthenticateProvider>();
       final userProvider = context.read<UserProvider>();
-      final user = await authProvider.createEmailAccount(
-          _emailCtrl.text.trim(), _passCtrl.text);
+      final user = await authProvider.createEmailAccount(_emailCtrl.text.trim(), _passCtrl.text);
       if (user != null) {
         await userProvider.setUserData(
           id: user.uid,
@@ -59,12 +58,10 @@ class _CreateAccountState extends State<CreateAccount> {
         context.read<AdminProvider>().logUserAction(user.uid, user.email, 'user_registered');
 
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Account created! Welcome 🎉',
-              style: GoogleFonts.inter()),
+          content: Text('Account created! Welcome 🎉', style: GoogleFonts.inter()),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ));
         await Future.delayed(const Duration(milliseconds: 600));
         if (!mounted) return;
@@ -85,8 +82,7 @@ class _CreateAccountState extends State<CreateAccount> {
         content: Text(msg, style: GoogleFonts.inter()),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -142,9 +138,7 @@ class _CreateAccountState extends State<CreateAccount> {
           Container(
             height: 200,
             decoration: BoxDecoration(
-              gradient: isDark
-                  ? AppColors.darkGradient
-                  : AppColors.primaryGradient,
+              gradient: isDark ? AppColors.darkGradient : AppColors.primaryGradient,
             ),
           ),
           SafeArea(
@@ -154,15 +148,9 @@ class _CreateAccountState extends State<CreateAccount> {
                 children: [
                   const SizedBox(height: 30),
                   // Header
-                  Text('Create Account',
-                      style: GoogleFonts.inter(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white)),
+                  Text('Create Account', style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
                   const SizedBox(height: 4),
-                  Text('Join We Split today',
-                      style: GoogleFonts.inter(
-                          fontSize: 13, color: Colors.white70)),
+                  Text('Join We Split today', style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
                   const SizedBox(height: 32),
                   // Card
                   Container(
@@ -170,12 +158,7 @@ class _CreateAccountState extends State<CreateAccount> {
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black.withOpacity(0.12),
-                            blurRadius: 30,
-                            offset: const Offset(0, 10))
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 30, offset: const Offset(0, 10))],
                     ),
                     child: Form(
                       key: _formKey,
@@ -212,17 +195,10 @@ class _CreateAccountState extends State<CreateAccount> {
                             value: availableCats.contains(_category) ? _category : (availableCats.isNotEmpty ? availableCats.first : null),
                             decoration: InputDecoration(
                               labelText: 'Category',
-                              prefixIcon: Icon(Icons.category_outlined,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: 20),
+                              prefixIcon: Icon(Icons.category_outlined, color: Theme.of(context).colorScheme.primary, size: 20),
                             ),
-                            items: availableCats
-                                .map((c) => DropdownMenuItem(
-                                    value: c,
-                                    child: Text(c, style: GoogleFonts.inter())))
-                                .toList(),
-                            onChanged: availableCats.isEmpty ? null : (v) =>
-                                setState(() => _category = v),
+                            items: availableCats.map((c) => DropdownMenuItem(value: c, child: Text(c, style: GoogleFonts.inter()))).toList(),
+                            onChanged: availableCats.isEmpty ? null : (v) => setState(() => _category = v),
                           ),
                           const SizedBox(height: 16),
                           AppTextField(
@@ -234,13 +210,10 @@ class _CreateAccountState extends State<CreateAccount> {
                             textInputAction: TextInputAction.done,
                             suffix: IconButton(
                               icon: Icon(
-                                _obscure
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
+                                _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                                 size: 20,
                               ),
-                              onPressed: () =>
-                                  setState(() => _obscure = !_obscure),
+                              onPressed: () => setState(() => _obscure = !_obscure),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -249,17 +222,17 @@ class _CreateAccountState extends State<CreateAccount> {
                             isLoading: _loading,
                             onPressed: _signUp,
                           ),
-                          const SizedBox(height: 12),
-                          AppButton(
-                            label: 'Continue with Google',
-                            icon: Icons.g_mobiledata_rounded,
-                            isOutlined: true,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            foregroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            onPressed: _loading ? null : _googleSignIn,
-                          ),
+                          // const SizedBox(height: 12),
+                          // AppButton(
+                          //   label: 'Continue with Google',
+                          //   icon: Icons.g_mobiledata_rounded,
+                          //   isOutlined: true,
+                          //   backgroundColor:
+                          //       Theme.of(context).colorScheme.primary,
+                          //   foregroundColor:
+                          //       Theme.of(context).colorScheme.primary,
+                          //   onPressed: _loading ? null : _googleSignIn,
+                          // ),
                         ],
                       ),
                     ),
@@ -268,19 +241,11 @@ class _CreateAccountState extends State<CreateAccount> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Already have an account?',
-                          style: GoogleFonts.inter(fontSize: 13)),
+                      Text('Already have an account?', style: GoogleFonts.inter(fontSize: 13)),
                       TextButton(
-                        onPressed: () => Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const LoginScreen())),
+                        onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
                         child: Text('Sign In',
-                            style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color:
-                                    Theme.of(context).colorScheme.primary)),
+                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary)),
                       ),
                     ],
                   ),

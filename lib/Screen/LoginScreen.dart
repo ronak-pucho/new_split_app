@@ -48,8 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   String _mapError(String msg) {
-    if (msg.contains('wrong-password') ||
-        msg.contains('invalid-credential')) {
+    if (msg.contains('wrong-password') || msg.contains('invalid-credential')) {
       return 'Incorrect email or password.';
     }
     if (msg.contains('user-not-found')) {
@@ -66,8 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
       content: Text(msg, style: GoogleFonts.inter()),
       backgroundColor: AppColors.error,
       behavior: SnackBarBehavior.floating,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     ));
   }
 
@@ -83,9 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             height: size.height * 0.45,
             decoration: BoxDecoration(
-              gradient: isDark
-                  ? AppColors.darkGradient
-                  : AppColors.primaryGradient,
+              gradient: isDark ? AppColors.darkGradient : AppColors.primaryGradient,
             ),
           ),
           SafeArea(
@@ -112,17 +108,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   Center(
-                    child: Text('We Split',
-                        style: GoogleFonts.inter(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white)),
+                    child: Text('We Split', style: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
                   ),
                   const SizedBox(height: 6),
                   Center(
-                    child: Text('Sign in to continue',
-                        style: GoogleFonts.inter(
-                            fontSize: 13, color: Colors.white70)),
+                    child: Text('Sign in to continue', style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
                   ),
                   SizedBox(height: size.height * 0.07),
                   // ── Glass card ────────────────────────────────────────
@@ -145,20 +135,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Welcome back!',
-                              style: GoogleFonts.inter(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface)),
+                              style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface)),
                           const SizedBox(height: 4),
                           Text('Enter your credentials to sign in',
-                              style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withOpacity(0.5))),
+                              style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
                           const SizedBox(height: 24),
                           AppTextField(
                             controller: _emailCtrl,
@@ -178,33 +158,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             textInputAction: TextInputAction.done,
                             suffix: IconButton(
                               icon: Icon(
-                                _obscure
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
+                                _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                                 size: 20,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(0.5),
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                               ),
-                              onPressed: () =>
-                                  setState(() => _obscure = !_obscure),
+                              onPressed: () => setState(() => _obscure = !_obscure),
                             ),
                           ),
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const ForgotPasswordScreen())),
-                              child: Text('Forgot password?',
-                                  style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary)),
+                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
+                              child: Text('Forgot password?', style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.primary)),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -219,34 +184,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
                   // ── Google sign-in ────────────────────────────────────
-                  AppButton(
-                    label: 'Continue with Google',
-                    icon: Icons.g_mobiledata_rounded,
-                    isOutlined: true,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.primary,
-                    onPressed: _loading ? null : _googleSignIn,
-                  ),
-                  const SizedBox(height: 24),
+                  // AppButton(
+                  //   label: 'Continue with Google',
+                  //   icon: Icons.g_mobiledata_rounded,
+                  //   isOutlined: true,
+                  //   backgroundColor: Theme.of(context).colorScheme.primary,
+                  //   foregroundColor: Theme.of(context).colorScheme.primary,
+                  //   onPressed: _loading ? null : _googleSignIn,
+                  // ),
+                  // const SizedBox(height: 24),
                   // ── Sign up link ──────────────────────────────────────
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("Don't have an account?",
-                            style: GoogleFonts.inter(fontSize: 13)),
+                        Text("Don't have an account?", style: GoogleFonts.inter(fontSize: 13)),
                         TextButton(
-                          onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const CreateAccount())),
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateAccount())),
                           child: Text('Sign Up',
-                              style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary)),
+                              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary)),
                         ),
                       ],
                     ),
@@ -267,10 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final credential = await authProvider.loginWithGoogle();
       if (credential?.user == null) return;
       if (!mounted) return;
-      await authProvider.signInEmailPassword(
-          context,
-          credential!.user!.email ?? '',
-          '');
+      await authProvider.signInEmailPassword(context, credential!.user!.email ?? '', '');
     } catch (_) {
       if (!mounted) return;
       _showError('Google sign in failed.');

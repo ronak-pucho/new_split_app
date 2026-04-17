@@ -1,6 +1,14 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:we_spilit/Screen/AccountScreen.dart';
 import 'package:we_spilit/Screen/CreateFriendScreen.dart';
 import 'package:we_spilit/common/helper/helper.dart';
@@ -259,32 +267,227 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   void _showQrDialog(BuildContext context, FriendsModel f) {
+    final upiId = f.fUpiId.trim();
+    // A UPI payment URI: upi://pay?pa=<upiId>&pn=<name>
+    final upiUri = 'upi://pay?pa=$upiId&pn=${Uri.encodeComponent('${f.fName} ${f.lName}')}&cu=INR';
+    final GlobalKey qrKey = GlobalKey();
+
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('${f.fName} ${f.lName}', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset('asset/qr.jpeg', width: 180, height: 180, fit: BoxFit.cover),
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 340),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Title row ────────────────────────────────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${f.fName} ${f.lName}',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 18),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Save QR as Image',
+                      icon: const Icon(Icons.download_rounded),
+                      onPressed: () => _saveQrImage(qrKey, '${f.fName}_${f.lName}_qr', ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // ── Body ─────────────────────────────────────────────
+                if (upiId.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'No UPI ID added for this friend.',
+                            style: GoogleFonts.inter(fontSize: 13, color: Colors.orange.shade800),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else ...[
+                  // ── QR Code ──────────────────────────────────────
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: RepaintBoundary(
+                        key: qrKey,
+                        child: QrImageView(
+                          data: upiUri,
+                          version: QrVersions.auto,
+                          size: 200,
+                          backgroundColor: Colors.white,
+                          eyeStyle: const QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                          dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // ── UPI ID pill ───────────────────────────────────
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: Theme.of(ctx).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.account_balance_wallet_outlined, size: 16, color: Theme.of(ctx).colorScheme.primary),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              upiId,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(ctx).colorScheme.primary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (f.amount != null) ...[
+                    const SizedBox(height: 6),
+                    Center(
+                      child: Text(
+                        'Shared: ₹${f.amount!.toStringAsFixed(0)}',
+                        style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  // ── Pay via UPI button ────────────────────────────
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4CAF50),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 2,
+                    ),
+                    icon: const Icon(Icons.payment_rounded),
+                    label: Text('Pay via UPI', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 15)),
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _launchUpiPayment(context, f);
+                    },
+                  ),
+                ],
+                const SizedBox(height: 8),
+                // ── Close button ──────────────────────────────────────
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: Text('Close', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              f.amount != null ? 'Shared: ₹${f.amount!.toStringAsFixed(0)}' : 'No expenses yet',
-              style: GoogleFonts.inter(fontSize: 14),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Close', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
           ),
-        ],
+        ),
       ),
     );
+  }
+
+  // ── Save QR as image ─────────────────────────────────────────────────────
+  Future<void> _saveQrImage(GlobalKey repaintKey, String filename, BuildContext ctx) async {
+    try {
+      final boundary = repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return;
+      final Uint8List pngBytes = byteData.buffer.asUint8List();
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/$filename.png');
+      await file.writeAsBytes(pngBytes);
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'image/png')],
+        text: 'UPI QR Code',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save QR: $e', style: GoogleFonts.inter()), behavior: SnackBarBehavior.floating),
+      );
+    }
+  }
+
+  // ── UPI payment flow (url_launcher) ─────────────────────────────────────
+  Future<void> _launchUpiPayment(BuildContext context, FriendsModel f) async {
+    final amount = f.amount != null && f.members != null && f.members! > 0
+        ? divideAmount(f.amount!, f.members!)
+        : 0.0;
+
+    final uri = Uri(
+      scheme: 'upi',
+      host: 'pay',
+      queryParameters: {
+        'pa': f.fUpiId,
+        'pn': '${f.fName} ${f.lName}',
+        'tn': 'Bill split via WeSplit',
+        if (amount > 0) 'am': amount.toStringAsFixed(2),
+        'cu': 'INR',
+      },
+    );
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No UPI app found on this device.', style: GoogleFonts.inter()),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
   }
 }
