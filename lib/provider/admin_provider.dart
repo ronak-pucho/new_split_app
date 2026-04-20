@@ -44,11 +44,9 @@ class AdminProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-
   // ── Analytics getters ──────────────────────────────────────────────────────
   int get totalUsers => _users.length;
-  int get activeUsers =>
-      _users.where((u) => u.status == 'active').length;
+  int get activeUsers => _users.where((u) => u.status == 'active').length;
 
   Map<String, int> get categoryDistribution {
     final map = <String, int>{};
@@ -79,10 +77,7 @@ class AdminProvider extends ChangeNotifier {
     return map;
   }
 
-  String _monthAbbr(int month) => [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-      ][month - 1];
+  String _monthAbbr(int month) => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month - 1];
 
   // ── Data loaders ───────────────────────────────────────────────────────────
   Future<void> fetchAllUsers() async {
@@ -90,10 +85,9 @@ class AdminProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final snap = await _db.collection('users').get();
-      _users = snap.docs
-          .map((d) => UserModel.fromJson(d.data()))
-          .toList();
-    } catch (_) {} finally {
+      _users = snap.docs.map((d) => UserModel.fromJson(d.data())).toList();
+    } catch (_) {
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
@@ -101,28 +95,16 @@ class AdminProvider extends ChangeNotifier {
 
   Future<void> fetchLogs() async {
     try {
-      final snap = await _db
-          .collection('logs')
-          .orderBy('timestamp', descending: true)
-          .limit(100)
-          .get();
-      _logs = snap.docs
-          .map((d) => AdminLogModel.fromJson(d.data()))
-          .toList();
+      final snap = await _db.collection('logs').orderBy('timestamp', descending: true).limit(100).get();
+      _logs = snap.docs.map((d) => AdminLogModel.fromJson(d.data())).toList();
       notifyListeners();
     } catch (_) {}
   }
 
   Future<void> fetchRequests() async {
     try {
-      final snap = await _db
-          .collection('account_requests')
-          .where('status', isEqualTo: 'pending')
-          .orderBy('timestamp', descending: true)
-          .get();
-      _requests = snap.docs
-          .map((d) => AccountRequestModel.fromJson(d.data()))
-          .toList();
+      final snap = await _db.collection('account_requests').where('status', isEqualTo: 'pending').orderBy('timestamp', descending: true).get();
+      _requests = snap.docs.map((d) => AccountRequestModel.fromJson(d.data())).toList();
       notifyListeners();
     } catch (_) {}
   }
@@ -168,6 +150,7 @@ class AdminProvider extends ChangeNotifier {
       if (idx != -1) {
         _users[idx].userType = newType;
       }
+
       final logId = DateTime.now().millisecondsSinceEpoch.toString();
       final log = AdminLogModel(
         logId: logId,
@@ -196,7 +179,7 @@ class AdminProvider extends ChangeNotifier {
       if (idx != -1) {
         _users[idx].status = newStatus;
       }
-      
+
       final logId = DateTime.now().millisecondsSinceEpoch.toString();
       final log = AdminLogModel(
         logId: logId,
