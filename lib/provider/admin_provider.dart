@@ -168,7 +168,6 @@ class AdminProvider extends ChangeNotifier {
       if (idx != -1) {
         _users[idx].userType = newType;
       }
-      
       final logId = DateTime.now().millisecondsSinceEpoch.toString();
       final log = AdminLogModel(
         logId: logId,
