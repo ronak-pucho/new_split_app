@@ -30,6 +30,7 @@ class UserProvider extends ChangeNotifier {
       userEmail: userEmail,
       phoneNumber: phoneNumber,
       category: category ?? 'Personal',
+      userType: 'user',
       status: 'active',
       createdAt: DateTime.now(),
     );
@@ -49,7 +50,8 @@ class UserProvider extends ChangeNotifier {
       if (doc.exists && doc.data() != null) {
         _currentUser = UserModel.fromJson(doc.data()!);
       }
-    } catch (_) {} finally {
+    } catch (_) {
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
@@ -59,6 +61,33 @@ class UserProvider extends ChangeNotifier {
   Future<void> submitActivationRequest(String message) async {
     if (_currentUser == null) return;
     try {
+      final snap = await _fireStore.collection('account_requests')
+          .where('userId', isEqualTo: _currentUser!.userId)
+          .get();
+          
+      final docs = snap.docs.map((d) => AccountRequestModel.fromJson(d.data())).toList();
+      docs.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      
+      int waitHours = 12;
+      try {
+        final doc = await _fireStore.collection('settings').doc('app_config').get();
+        if (doc.exists) waitHours = doc.data()?['cooldownHours'] ?? 12;
+      } catch (_) {}
+      
+      if (docs.length >= 2) {
+        final req1 = docs[0];
+        final req2 = docs[1];
+        
+        if (req1.adminReply == null && req2.adminReply == null) {
+          final hoursSinceLast = DateTime.now().difference(req1.timestamp).inHours;
+          if (hoursSinceLast < waitHours) {
+            final remain = waitHours - hoursSinceLast;
+            final waitStr = remain > 0 ? '$remain hours' : '${waitHours * 60 - DateTime.now().difference(req1.timestamp).inMinutes} minutes';
+            throw Exception('Message limit reached. Try again in $waitStr or wait for an admin to reply.');
+          }
+        }
+      }
+
       final reqId = DateTime.now().millisecondsSinceEpoch.toString();
       final request = AccountRequestModel(
         requestId: reqId,
@@ -106,7 +135,8 @@ class UserProvider extends ChangeNotifier {
         category: category,
         photoUrl: photoUrl,
       );
-    } catch (_) {} finally {
+    } catch (_) {
+    } finally {
       _isLoading = false;
       notifyListeners();
     }

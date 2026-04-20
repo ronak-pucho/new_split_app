@@ -94,8 +94,8 @@ class AdminAnalyticsScreen extends StatelessWidget {
                                     .map((e) {
                                   final idx = e.key % _pieColors.length;
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 4),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
                                     child: Row(
                                       children: [
                                         Container(
@@ -110,8 +110,8 @@ class AdminAnalyticsScreen extends StatelessWidget {
                                         Expanded(
                                           child: Text(
                                             '${e.value.key} (${e.value.value})',
-                                            style: GoogleFonts.inter(
-                                                fontSize: 12),
+                                            style:
+                                                GoogleFonts.inter(fontSize: 12),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -139,12 +139,11 @@ class AdminAnalyticsScreen extends StatelessWidget {
                       : BarChart(
                           BarChartData(
                             alignment: BarChartAlignment.spaceAround,
-                            maxY: (monthMap.values.reduce(
-                                        (a, b) => a > b ? a : b)
+                            maxY: (monthMap.values
+                                    .reduce((a, b) => a > b ? a : b)
                                     .toDouble() +
                                 2),
-                            barTouchData:
-                                BarTouchData(enabled: false),
+                            barTouchData: BarTouchData(enabled: false),
                             titlesData: FlTitlesData(
                               leftTitles: AxisTitles(
                                 sideTitles: SideTitles(
@@ -160,8 +159,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
                                 sideTitles: SideTitles(
                                   showTitles: true,
                                   getTitlesWidget: (v, _) {
-                                    final keys =
-                                        monthMap.keys.toList();
+                                    final keys = monthMap.keys.toList();
                                     final idx = v.toInt();
                                     if (idx < 0 || idx >= keys.length) {
                                       return const SizedBox.shrink();
@@ -170,19 +168,16 @@ class AdminAnalyticsScreen extends StatelessWidget {
                                       padding: const EdgeInsets.only(top: 4),
                                       child: Text(
                                         keys[idx],
-                                        style:
-                                            GoogleFonts.inter(fontSize: 9),
+                                        style: GoogleFonts.inter(fontSize: 9),
                                       ),
                                     );
                                   },
                                 ),
                               ),
                               topTitles: const AxisTitles(
-                                  sideTitles:
-                                      SideTitles(showTitles: false)),
+                                  sideTitles: SideTitles(showTitles: false)),
                               rightTitles: const AxisTitles(
-                                  sideTitles:
-                                      SideTitles(showTitles: false)),
+                                  sideTitles: SideTitles(showTitles: false)),
                             ),
                             gridData: FlGridData(
                               horizontalInterval: 1,
@@ -239,14 +234,10 @@ class AdminAnalyticsScreen extends StatelessWidget {
                       _statRow(context, 'Active Users',
                           '${adminProvider.activeUsers}'),
                       _divider(context),
-                      _statRow(
-                          context,
-                          'Inactive Users',
+                      _statRow(context, 'Inactive Users',
                           '${adminProvider.totalUsers - adminProvider.activeUsers}'),
                       _divider(context),
-                      _statRow(
-                          context,
-                          'Unique Categories',
+                      _statRow(context, 'Unique Categories',
                           '${adminProvider.categoryDistribution.keys.length}'),
                     ],
                   ),
@@ -260,10 +251,8 @@ class AdminAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(BuildContext context, String title) =>
-      Text(title,
-          style: GoogleFonts.inter(
-              fontSize: 16, fontWeight: FontWeight.w700));
+  Widget _sectionTitle(BuildContext context, String title) => Text(title,
+      style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700));
 
   BoxDecoration _cardDeco(BuildContext context) => BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -279,14 +268,11 @@ class AdminAnalyticsScreen extends StatelessWidget {
   Widget _emptyState(BuildContext context, String msg) => Center(
         child: Text(msg,
             style: GoogleFonts.inter(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withOpacity(0.4))),
+                color:
+                    Theme.of(context).colorScheme.onSurface.withOpacity(0.4))),
       );
 
-  Widget _statRow(BuildContext context, String label, String value) =>
-      Padding(
+  Widget _statRow(BuildContext context, String label, String value) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -297,8 +283,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
                         .colorScheme
                         .onSurface
                         .withOpacity(0.6))),
-            Text(value,
-                style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            Text(value, style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ],
         ),
       );

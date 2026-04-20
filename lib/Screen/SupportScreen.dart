@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:we_spilit/Screen/LoginScreen.dart';
 import 'package:we_spilit/core/constants/app_colors.dart';
-import 'package:we_spilit/provider/auth_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:we_spilit/provider/user_provider.dart';
 import 'package:we_spilit/model/account_request_model.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class InactiveAccountScreen extends StatefulWidget {
-  const InactiveAccountScreen({super.key});
+class SupportScreen extends StatefulWidget {
+  const SupportScreen({super.key});
 
   @override
-  State<InactiveAccountScreen> createState() => _InactiveAccountScreenState();
+  State<SupportScreen> createState() => _SupportScreenState();
 }
 
-class _InactiveAccountScreenState extends State<InactiveAccountScreen> {
+class _SupportScreenState extends State<SupportScreen> {
   final _msgCtrl = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _loading = false;
@@ -72,43 +70,11 @@ class _InactiveAccountScreenState extends State<InactiveAccountScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Account Suspended', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.error),
-            tooltip: 'Logout',
-            onPressed: () async {
-              await context.read<AuthenticateProvider>().logout(context);
-              if (context.mounted) {
-                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r) => false);
-              }
-            },
-          )
-        ],
+        title: Text('Help & Support', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              color: AppColors.error.withOpacity(0.1),
-              child: Row(
-                children: [
-                  const Icon(Icons.lock_outline, size: 32, color: AppColors.error),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      'Your account is inactive. Please use the chat below to contact administrators for reactivation.',
-                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.error, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
-            ),
             Expanded(
               child: uid == null
                   ? const Center(child: CircularProgressIndicator())
@@ -125,7 +91,7 @@ class _InactiveAccountScreenState extends State<InactiveAccountScreen> {
                               children: [
                                 Icon(Icons.chat_bubble_outline, size: 64, color: scheme.onSurface.withOpacity(0.2)),
                                 const SizedBox(height: 16),
-                                Text('Start a conversation to request access.', style: GoogleFonts.inter(color: scheme.onSurface.withOpacity(0.5))),
+                                Text('Start a conversation with support.', style: GoogleFonts.inter(color: scheme.onSurface.withOpacity(0.5))),
                               ],
                             ),
                           );

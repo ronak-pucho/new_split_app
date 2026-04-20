@@ -11,7 +11,8 @@ import 'package:we_spilit/provider/friends_provider.dart';
 import 'package:we_spilit/provider/search_provider.dart';
 
 class AddExpenseScreen extends StatefulWidget {
-  const AddExpenseScreen({super.key});
+  final FriendsModel? expense;
+  const AddExpenseScreen({super.key, this.expense});
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
 }
@@ -24,6 +25,20 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _memberCtrl = TextEditingController();
   FriendsModel? _selectedFriend;
   bool _loading = false;
+
+  bool get _isEditing => widget.expense != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.expense;
+    if (e != null) {
+      _selectedFriend = e;
+      _descCtrl.text = e.description ?? '';
+      _amountCtrl.text = (e.amount ?? 0).toString();
+      _memberCtrl.text = (e.members ?? 1).toString();
+    }
+  }
 
   @override
   void dispose() {
@@ -56,11 +71,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         description: _descCtrl.text.trim(),
         amount: int.tryParse(_amountCtrl.text.trim()) ?? 0,
         members: int.tryParse(_memberCtrl.text.trim()) ?? 1,
+        isExpenseDelete: _selectedFriend!.isExpenseDelete,
+        isFriendsDelete: _selectedFriend!.isFriendsDelete,
       );
       await context.read<FriendsProvider>().setFireStoreExpanse(friendsModel: updatedFriend);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Expense added successfully!', style: GoogleFonts.inter()),
+        content: Text(_isEditing ? 'Expense updated successfully!' : 'Expense added successfully!', style: GoogleFonts.inter()),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -69,7 +86,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Failed to add expense.', style: GoogleFonts.inter()),
+        content: Text(_isEditing ? 'Failed to update expense.' : 'Failed to add expense.', style: GoogleFonts.inter()),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ));
@@ -83,7 +100,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Expense', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+        title: Text(_isEditing ? 'Edit Expense' : 'Add Expense', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         leading: const BackButton(),
       ),
       body: SingleChildScrollView(
@@ -93,59 +110,61 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Search friend ──────────────────────────────────────────
+              // ── Friend selector (disabled during edit) ─────────────────
               Text('With you and:',
                   style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: scheme.onSurface.withOpacity(0.55), letterSpacing: 0.8)),
               const SizedBox(height: 10),
-              AppTextField(
-                controller: _searchCtrl,
-                label: 'Search friend',
-                prefixIcon: Icons.search,
-                onChanged: (val) {
-                  context.read<SearchProvider>().searchEvent(
-                        val.trim().toLowerCase(),
-                        context.read<FriendsProvider>().getFriend().map((e) => joinString(e.fName, e.lName).trim().toLowerCase()).toList(),
-                      );
-                },
-              ),
-              const SizedBox(height: 8),
-
-              // ── Search results ─────────────────────────────────────────
-              Consumer<SearchProvider>(builder: (ctx, searchProv, _) {
-                if (searchProv.searchResult.isEmpty) {
-                  return _selectedFriend != null ? _selectedFriendChip(scheme) : const SizedBox.shrink();
-                }
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 10)],
-                  ),
-                  child: Column(
-                    children: searchProv.searchResult.map((name) {
-                      final friend = context.read<FriendsProvider>().addSearchData(name);
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: scheme.primary.withOpacity(0.15),
-                          child: Text(
-                            name[0].toUpperCase(),
-                            style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w700),
+              if (_isEditing) ...[
+                if (_selectedFriend != null) _selectedFriendChip(scheme),
+              ] else ...[
+                AppTextField(
+                  controller: _searchCtrl,
+                  label: 'Search friend',
+                  prefixIcon: Icons.search,
+                  onChanged: (val) {
+                    context.read<SearchProvider>().searchEvent(
+                          val.trim().toLowerCase(),
+                          context.read<FriendsProvider>().getFriend().map((e) => joinString(e.fName, e.lName).trim().toLowerCase()).toList(),
+                        );
+                  },
+                ),
+                const SizedBox(height: 8),
+                Consumer<SearchProvider>(builder: (ctx, searchProv, _) {
+                  if (searchProv.searchResult.isEmpty) {
+                    return _selectedFriend != null ? _selectedFriendChip(scheme) : const SizedBox.shrink();
+                  }
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 10)],
+                    ),
+                    child: Column(
+                      children: searchProv.searchResult.map((name) {
+                        final friend = context.read<FriendsProvider>().addSearchData(name);
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: scheme.primary.withOpacity(0.15),
+                            child: Text(
+                              name[0].toUpperCase(),
+                              style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w700),
+                            ),
                           ),
-                        ),
-                        title: Text(name.split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
-                            style: GoogleFonts.inter()),
-                        onTap: () {
-                          setState(() {
-                            _selectedFriend = friend;
-                            _searchCtrl.clear();
-                          });
-                          context.read<SearchProvider>().clearSearch();
-                        },
-                      );
-                    }).toList(),
-                  ),
-                );
-              }),
+                          title: Text(name.split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
+                              style: GoogleFonts.inter()),
+                          onTap: () {
+                            setState(() {
+                              _selectedFriend = friend;
+                              _searchCtrl.clear();
+                            });
+                            context.read<SearchProvider>().clearSearch();
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  );
+                }),
+              ],
 
               const SizedBox(height: 24),
 
@@ -203,10 +222,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
               const SizedBox(height: 32),
               AppButton(
-                label: 'Add Expense',
+                label: _isEditing ? 'Save Changes' : 'Add Expense',
                 isLoading: _loading,
                 onPressed: _addExpense,
-                icon: Icons.add_circle_outline,
+                icon: _isEditing ? Icons.save_outlined : Icons.add_circle_outline,
               ),
               const SizedBox(height: 24),
             ],

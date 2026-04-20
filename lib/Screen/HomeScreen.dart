@@ -52,7 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
               background: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [scheme.onSurface.withOpacity(0.70), scheme.primary.withOpacity(0.50)],
+                    colors: [
+                      scheme.onSurface.withOpacity(0.70),
+                      scheme.primary.withOpacity(0.50)
+                    ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -106,7 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 16),
                         // Summary pill
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.18),
                             borderRadius: BorderRadius.circular(12),
@@ -114,11 +118,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.receipt_long, size: 16, color: Colors.white),
+                              const Icon(Icons.receipt_long,
+                                  size: 16, color: Colors.white),
                               const SizedBox(width: 8),
                               Text(
                                 '₹${totalShared.toStringAsFixed(2)} total shared',
-                                style: GoogleFonts.inter(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600),
+                                style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600),
                               ),
                             ],
                           ),
@@ -164,7 +172,8 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(builder: (_) => const CreateFriendScreen()),
         ),
         icon: const Icon(Icons.person_add_outlined),
-        label: Text('Add Friend', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        label: Text('Add Friend',
+            style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         backgroundColor: scheme.primary,
         foregroundColor: Colors.white,
       ),
@@ -186,9 +195,13 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Icon(Icons.people_outline, size: 44, color: scheme.primary),
           ),
           const SizedBox(height: 20),
-          Text('No friends yet', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700)),
+          Text('No friends yet',
+              style:
+                  GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
-          Text('Add a friend to start splitting expenses', style: GoogleFonts.inter(fontSize: 14, color: scheme.onSurface.withOpacity(0.5))),
+          Text('Add a friend to start splitting expenses',
+              style: GoogleFonts.inter(
+                  fontSize: 14, color: scheme.onSurface.withOpacity(0.5))),
         ],
       ),
     );
@@ -197,8 +210,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildFriendCard(BuildContext context, FriendsModel friend) {
     final provider = context.read<FriendsProvider>();
     final scheme = Theme.of(context).colorScheme;
-    final hasExpense = friend.amount != null && friend.amount! > 0 && friend.members != null;
-    final perHead = hasExpense ? divideAmount(friend.amount!, friend.members!) : 0.0;
+    final hasExpense =
+        friend.amount != null && friend.amount! > 0 && friend.members != null;
+    final perHead =
+        hasExpense ? divideAmount(friend.amount!, friend.members!) : 0.0;
 
     return Dismissible(
       key: Key(friend.fId),
@@ -229,7 +244,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: AvatarWidget(
             name: '${friend.fName} ${friend.lName}',
             radius: 24,
@@ -243,10 +259,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   '₹${perHead.toStringAsFixed(2)} each',
                   style: GoogleFonts.inter(fontSize: 12, color: scheme.primary),
                 )
-              : Text('No expenses yet', style: GoogleFonts.inter(fontSize: 12, color: scheme.onSurface.withOpacity(0.4))),
-          trailing: IconButton(
-            icon: Icon(Icons.qr_code_2_outlined, color: scheme.primary),
-            onPressed: () => _showQrDialog(context, friend),
+              : Text('No expenses yet',
+                  style: GoogleFonts.inter(
+                      fontSize: 12, color: scheme.onSurface.withOpacity(0.4))),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: 'Edit Friend',
+                icon: Icon(Icons.edit_outlined, color: scheme.primary),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => CreateFriendScreen(friend: friend)),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Show QR',
+                icon: Icon(Icons.qr_code_2_outlined, color: scheme.primary),
+                onPressed: () => _showQrDialog(context, friend),
+              ),
+            ],
           ),
         ),
       ),
@@ -256,12 +288,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<bool?> _confirmDelete(BuildContext context) => showDialog<bool>(
         context: context,
         builder: (_) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Remove Friend?', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-          content: Text('This will remove the friend and their expenses.', style: GoogleFonts.inter()),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Remove Friend?',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          content: Text('This will remove the friend and their expenses.',
+              style: GoogleFonts.inter()),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey))),
-            TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Remove', style: GoogleFonts.inter(color: Colors.red))),
+            TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text('Cancel',
+                    style: GoogleFonts.inter(color: Colors.grey))),
+            TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text('Remove',
+                    style: GoogleFonts.inter(color: Colors.red))),
           ],
         ),
       );
@@ -269,7 +310,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showQrDialog(BuildContext context, FriendsModel f) {
     final upiId = f.fUpiId.trim();
     // A UPI payment URI: upi://pay?pa=<upiId>&pn=<name>
-    final upiUri = 'upi://pay?pa=$upiId&pn=${Uri.encodeComponent('${f.fName} ${f.lName}')}&cu=INR';
+    final upiUri =
+        'upi://pay?pa=$upiId&pn=${Uri.encodeComponent('${f.fName} ${f.lName}')}&cu=INR';
     final GlobalKey qrKey = GlobalKey();
 
     showDialog(
@@ -290,13 +332,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Text(
                         '${f.fName} ${f.lName}',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 18),
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700, fontSize: 18),
                       ),
                     ),
                     IconButton(
                       tooltip: 'Save QR as Image',
                       icon: const Icon(Icons.download_rounded),
-                      onPressed: () => _saveQrImage(qrKey, '${f.fName}_${f.lName}_qr', ctx),
+                      onPressed: () =>
+                          _saveQrImage(qrKey, '${f.fName}_${f.lName}_qr', ctx),
                     ),
                   ],
                 ),
@@ -312,12 +356,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700),
+                        Icon(Icons.warning_amber_rounded,
+                            color: Colors.orange.shade700),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'No UPI ID added for this friend.',
-                            style: GoogleFonts.inter(fontSize: 13, color: Colors.orange.shade800),
+                            style: GoogleFonts.inter(
+                                fontSize: 13, color: Colors.orange.shade800),
                           ),
                         ),
                       ],
@@ -362,15 +408,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   // ── UPI ID pill ───────────────────────────────────
                   Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 7),
                       decoration: BoxDecoration(
-                        color: Theme.of(ctx).colorScheme.primary.withOpacity(0.1),
+                        color:
+                            Theme.of(ctx).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.account_balance_wallet_outlined, size: 16, color: Theme.of(ctx).colorScheme.primary),
+                          Icon(Icons.account_balance_wallet_outlined,
+                              size: 16,
+                              color: Theme.of(ctx).colorScheme.primary),
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
@@ -392,28 +442,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     Center(
                       child: Text(
                         'Shared: ₹${f.amount!.toStringAsFixed(0)}',
-                        style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600),
+                        style: GoogleFonts.inter(
+                            fontSize: 13, color: Colors.grey.shade600),
                       ),
                     ),
                   ],
                   const SizedBox(height: 20),
                   // ── Pay via UPI button ────────────────────────────
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 50),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      elevation: 2,
-                    ),
-                    icon: const Icon(Icons.payment_rounded),
-                    label: Text('Pay via UPI', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 15)),
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      _launchUpiPayment(context, f);
-                    },
-                  ),
+                  // ElevatedButton.icon(
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: const Color(0xFF4CAF50),
+                  //     foregroundColor: Colors.white,
+                  //     minimumSize: const Size(double.infinity, 50),
+                  //     padding: const EdgeInsets.symmetric(vertical: 14),
+                  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  //     elevation: 2,
+                  //   ),
+                  //   icon: const Icon(Icons.payment_rounded),
+                  //   label: Text('Pay via UPI', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 15)),
+                  //   onPressed: () {
+                  //     Navigator.pop(ctx);
+                  //     _launchUpiPayment(context, f);
+                  //   },
+                  // ),
                 ],
                 const SizedBox(height: 8),
                 // ── Close button ──────────────────────────────────────
@@ -421,7 +472,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: Text('Close', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                    child: Text('Close',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
@@ -433,9 +485,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ── Save QR as image ─────────────────────────────────────────────────────
-  Future<void> _saveQrImage(GlobalKey repaintKey, String filename, BuildContext ctx) async {
+  Future<void> _saveQrImage(
+      GlobalKey repaintKey, String filename, BuildContext ctx) async {
     try {
-      final boundary = repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary = repaintKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
       if (boundary == null) return;
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -453,7 +507,9 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not save QR: $e', style: GoogleFonts.inter()), behavior: SnackBarBehavior.floating),
+        SnackBar(
+            content: Text('Could not save QR: $e', style: GoogleFonts.inter()),
+            behavior: SnackBarBehavior.floating),
       );
     }
   }
@@ -482,10 +538,12 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No UPI app found on this device.', style: GoogleFonts.inter()),
+          content: Text('No UPI app found on this device.',
+              style: GoogleFonts.inter()),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }

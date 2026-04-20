@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:we_spilit/core/constants/app_colors.dart';
 import 'package:we_spilit/provider/admin_provider.dart';
+import 'package:we_spilit/model/account_request_model.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:we_spilit/admin_base/AdminChatScreen.dart';
 
 class AdminRequestsScreen extends StatefulWidget {
   const AdminRequestsScreen({super.key});
@@ -27,6 +29,15 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
     final requests = provider.requests;
     final scheme = Theme.of(context).colorScheme;
 
+    // Grouping requests by user
+    final Map<String, List<AccountRequestModel>> grouped = {};
+    for (var req in requests) {
+      if (grouped[req.userId] == null) grouped[req.userId] = [];
+      grouped[req.userId]!.add(req);
+    }
+    
+    final groupedList = grouped.entries.map((e) => e.value).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Account Support Requests',
@@ -34,7 +45,7 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
         backgroundColor: const Color(0xFF7B1FA2),
         foregroundColor: Colors.white,
       ),
-      body: requests.isEmpty
+      body: groupedList.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -48,133 +59,77 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: requests.length,
+              itemCount: groupedList.length,
               itemBuilder: (ctx, i) {
-                final req = requests[i];
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3)),
-                    ],
-                    border: Border.all(color: AppColors.error.withOpacity(0.1)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
+                final userGroup = groupedList[i];
+                userGroup.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+                final recentReq = userGroup.first;
+                final unrepliedCount = userGroup.where((r) => r.adminReply == null).length;
+
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      ctx,
+                      MaterialPageRoute(
+                        builder: (_) => AdminChatScreen(
+                          userId: recentReq.userId,
+                          userName: recentReq.userName,
+                          userEmail: recentReq.userEmail,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    decoration: BoxDecoration(
+                      border: Border(bottom: BorderSide(color: scheme.onSurface.withOpacity(0.05))),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: const Color(0xFF7B1FA2).withOpacity(0.1),
+                          child: Text(recentReq.userName.isNotEmpty ? recentReq.userName[0].toUpperCase() : 'U', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: const Color(0xFF7B1FA2))),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.warning_amber_rounded,
-                                  color: AppColors.error, size: 20),
-                              const SizedBox(width: 8),
-                              Text(req.userName,
-                                  style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w700)),
+                              Text(recentReq.userName, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16)),
+                              const SizedBox(height: 4),
+                              Text(
+                                recentReq.message,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(fontSize: 13, color: scheme.onSurface.withOpacity(0.6)),
+                              ),
                             ],
                           ),
-                          Text(timeago.format(req.timestamp),
-                              style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: scheme.onSurface.withOpacity(0.5))),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(req.userEmail,
-                          style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: scheme.onSurface.withOpacity(0.5))),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Divider(height: 1),
-                      ),
-                      Text('Message:',
-                          style: GoogleFonts.inter(
-                              fontSize: 12, fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: scheme.onSurface.withOpacity(0.03),
-                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(req.message,
-                            style: GoogleFonts.inter(height: 1.4)),
-                      ),
-                      const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showReactivateDialog(ctx, req),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.success,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 10),
-                          ),
-                          icon: const Icon(Icons.check_circle_outline, size: 18),
-                          label: Text('Reactivate Account',
-                              style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                    ],
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(timeago.format(recentReq.timestamp), style: GoogleFonts.inter(fontSize: 11, color: scheme.onSurface.withOpacity(0.5))),
+                            if (unrepliedCount > 0) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.error,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text('$unrepliedCount', style: GoogleFonts.inter(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                              )
+                            ]
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 );
               },
             ),
-    );
-  }
-
-  void _showReactivateDialog(BuildContext ctx, dynamic req) {
-    showDialog(
-      context: ctx,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Reactivate User?',
-            style: GoogleFonts.inter(
-                fontWeight: FontWeight.w700, color: AppColors.success)),
-        content: Text(
-            'This will mark the request as resolved and fully restore ${req.userName}\'s access to the application immediately.',
-            style: GoogleFonts.inter()),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel', style: GoogleFonts.inter())),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                final provider = context.read<AdminProvider>();
-                await provider.toggleUserStatus(
-                    req.userId, req.userEmail, 'active');
-                await provider.resolveRequest(req.requestId);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Account Activated!',
-                        style: GoogleFonts.inter()),
-                    backgroundColor: AppColors.success,
-                  ));
-                }
-              } catch (_) {}
-            },
-            child: Text('Activate',
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700, color: AppColors.success)),
-          ),
-        ],
-      ),
     );
   }
 }

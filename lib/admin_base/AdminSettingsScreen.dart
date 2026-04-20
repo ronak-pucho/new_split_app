@@ -4,13 +4,30 @@ import 'package:provider/provider.dart';
 import 'package:we_spilit/ThemeProvider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:we_spilit/admin_base/AdminCategoriesScreen.dart';
+import 'package:we_spilit/admin_base/AdminGroupTypesScreen.dart';
+import 'package:we_spilit/provider/admin_provider.dart';
+import 'package:we_spilit/provider/group_type_provider.dart';
 
-class AdminSettingsScreen extends StatelessWidget {
+class AdminSettingsScreen extends StatefulWidget {
   const AdminSettingsScreen({super.key});
+
+  @override
+  State<AdminSettingsScreen> createState() => _AdminSettingsScreenState();
+}
+
+class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminProvider>().fetchSettings();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
+    final adminProvider = context.watch<AdminProvider>();
     final isDark = themeProvider.isDarkMode;
     final scheme = Theme.of(context).colorScheme;
     final adminUser = FirebaseAuth.instance.currentUser;
@@ -86,8 +103,7 @@ class AdminSettingsScreen extends StatelessWidget {
                       color: const Color(0xFF7B1FA2),
                     ),
                     title: Text('Dark Mode',
-                        style:
-                            GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                     subtitle: Text(
                         isDark ? 'Dark theme active' : 'Light theme active',
                         style: GoogleFonts.inter(fontSize: 12)),
@@ -103,12 +119,19 @@ class AdminSettingsScreen extends StatelessWidget {
                 _sectionLabel(context, 'Admin Preferences'),
                 _card(context, [
                   _infoTile(context, Icons.notifications_outlined,
-                      'Push Notifications', true),
-                  Divider(height: 1, indent: 56, color: Theme.of(context).dividerColor),
+                      'Push Notifications', false),
+                  Divider(
+                      height: 1,
+                      indent: 56,
+                      color: Theme.of(context).dividerColor),
+                  _infoTile(context, Icons.security_outlined, 'Two-Factor Auth',
+                      false),
+                  Divider(
+                      height: 1,
+                      indent: 56,
+                      color: Theme.of(context).dividerColor),
                   _infoTile(
-                      context, Icons.security_outlined, 'Two-Factor Auth', false),
-                  Divider(height: 1, indent: 56, color: Theme.of(context).dividerColor),
-                  _infoTile(context, Icons.history_outlined, 'Audit Logging', true),
+                      context, Icons.history_outlined, 'Audit Logging', true),
                 ]),
 
                 const SizedBox(height: 16),
@@ -117,36 +140,65 @@ class AdminSettingsScreen extends StatelessWidget {
                 _sectionLabel(context, 'System'),
                 _card(context, [
                   ListTile(
+                    leading: const Icon(Icons.timer_outlined, color: Color(0xFF7B1FA2), size: 22),
+                    title: Text('Support Cooldown', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                    subtitle: Text('Hours between support requests', style: GoogleFonts.inter(fontSize: 12)),
+                    trailing: Text('${adminProvider.cooldownHours}h', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF7B1FA2))),
+                    onTap: () => _showCooldownDialog(context, adminProvider),
+                  ),
+                  Divider(height: 1, indent: 56, color: Theme.of(context).dividerColor),
+                  ListTile(
                     leading: const Icon(Icons.category_outlined,
                         color: Color(0xFF7B1FA2), size: 22),
                     title: Text('Manage Categories',
-                        style:
-                            GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                     trailing: const Icon(Icons.chevron_right, size: 20),
                     onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (_) => const AdminCategoriesScreen())),
                   ),
-                  Divider(height: 1, indent: 56, color: Theme.of(context).dividerColor),
+                  Divider(
+                      height: 1,
+                      indent: 56,
+                      color: Theme.of(context).dividerColor),
+                  ListTile(
+                    leading: const Icon(Icons.style_outlined,
+                        color: Color(0xFF7B1FA2), size: 22),
+                    title: Text('Manage Group Types',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                    trailing: const Icon(Icons.chevron_right, size: 20),
+                    onTap: () {
+                      context.read<GroupTypeProvider>().fetchGroupTypes();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const AdminGroupTypesScreen()));
+                    },
+                  ),
+                  Divider(
+                      height: 1,
+                      indent: 56,
+                      color: Theme.of(context).dividerColor),
                   ListTile(
                     leading: const Icon(Icons.info_outline,
                         color: Color(0xFF7B1FA2), size: 22),
                     title: Text('App Version',
-                        style:
-                            GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                     trailing: Text('1.0.0',
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             color: scheme.onSurface.withOpacity(0.5))),
                   ),
-                  Divider(height: 1, indent: 56, color: Theme.of(context).dividerColor),
+                  Divider(
+                      height: 1,
+                      indent: 56,
+                      color: Theme.of(context).dividerColor),
                   ListTile(
                     leading: const Icon(Icons.cloud_outlined,
                         color: Color(0xFF7B1FA2), size: 22),
                     title: Text('Firebase Project',
-                        style:
-                            GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                     trailing: Text('we-split',
                         style: GoogleFonts.inter(
                             fontSize: 13,
@@ -195,12 +247,48 @@ class AdminSettingsScreen extends StatelessWidget {
     return StatefulBuilder(builder: (ctx, setS) {
       return SwitchListTile.adaptive(
         secondary: Icon(icon, color: const Color(0xFF7B1FA2), size: 22),
-        title: Text(title,
-            style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+        title:
+            Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
         value: value,
         activeColor: const Color(0xFF7B1FA2),
         onChanged: (_) {},
       );
     });
+  }
+
+  void _showCooldownDialog(BuildContext context, AdminProvider provider) {
+    final ctrl = TextEditingController(text: provider.cooldownHours.toString());
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Set Cooldown Limit',
+            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+        content: TextField(
+          controller: ctrl,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Hours',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel', style: GoogleFonts.inter())),
+          ElevatedButton(
+            onPressed: () async {
+              final val = int.tryParse(ctrl.text.trim());
+              if (val != null && val > 0) {
+                await provider.updateCooldown(val);
+              }
+              if (context.mounted) Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B1FA2), foregroundColor: Colors.white),
+            child: Text('Save', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
   }
 }

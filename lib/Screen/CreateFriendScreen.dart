@@ -6,9 +6,11 @@ import 'package:we_spilit/common/widgets/app_button.dart';
 import 'package:we_spilit/common/widgets/app_text_field.dart';
 import 'package:we_spilit/core/constants/app_colors.dart';
 import 'package:we_spilit/provider/friends_provider.dart';
+import 'package:we_spilit/model/friend_model.dart';
 
 class CreateFriendScreen extends StatefulWidget {
-  const CreateFriendScreen({super.key});
+  final FriendsModel? friend;
+  const CreateFriendScreen({super.key, this.friend});
   @override
   State<CreateFriendScreen> createState() => _CreateFriendScreenState();
 }
@@ -20,6 +22,20 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
   final _phoneCtrl = TextEditingController();
   final _upiCtrl = TextEditingController();
   bool _loading = false;
+
+  bool get _isEditing => widget.friend != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final f = widget.friend;
+    if (f != null) {
+      _fNameCtrl.text = f.fName;
+      _lNameCtrl.text = f.lName;
+      _phoneCtrl.text = f.fPhoneNumber;
+      _upiCtrl.text = f.fUpiId;
+    }
+  }
 
   @override
   void dispose() {
@@ -33,15 +49,33 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await context.read<FriendsProvider>().setFireStoreFriends(
-            fName: _fNameCtrl.text.trim(),
-            lName: _lNameCtrl.text.trim(),
-            fPhoneNumber: _phoneCtrl.text.trim(),
-            fUpiId: _upiCtrl.text.trim(),
-          );
+      if (_isEditing) {
+        final existing = widget.friend!;
+        final updated = FriendsModel(
+          fId: existing.fId,
+          userId: existing.userId,
+          fName: _fNameCtrl.text.trim(),
+          lName: _lNameCtrl.text.trim(),
+          fPhoneNumber: _phoneCtrl.text.trim(),
+          fUpiId: _upiCtrl.text.trim(),
+          description: existing.description,
+          amount: existing.amount,
+          members: existing.members,
+          isExpenseDelete: existing.isExpenseDelete,
+          isFriendsDelete: existing.isFriendsDelete,
+        );
+        await context.read<FriendsProvider>().updateFriend(friendsModel: updated);
+      } else {
+        await context.read<FriendsProvider>().setFireStoreFriends(
+              fName: _fNameCtrl.text.trim(),
+              lName: _lNameCtrl.text.trim(),
+              fPhoneNumber: _phoneCtrl.text.trim(),
+              fUpiId: _upiCtrl.text.trim(),
+            );
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Friend added successfully! 🎉', style: GoogleFonts.inter()),
+        content: Text(_isEditing ? 'Friend updated successfully!' : 'Friend added successfully! 🎉', style: GoogleFonts.inter()),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -50,7 +84,7 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Failed to add friend.', style: GoogleFonts.inter()),
+        content: Text(_isEditing ? 'Failed to update friend.' : 'Failed to add friend.', style: GoogleFonts.inter()),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ));
@@ -64,7 +98,7 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Friend', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+        title: Text(_isEditing ? 'Edit Friend' : 'Add Friend', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         leading: const BackButton(),
       ),
       body: SingleChildScrollView(
@@ -87,16 +121,16 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
                     ),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.person_add_outlined, color: Colors.white, size: 34),
+                  child: Icon(_isEditing ? Icons.edit_outlined : Icons.person_add_outlined, color: Colors.white, size: 34),
                 ),
               ),
               const SizedBox(height: 20),
               Center(
-                child: Text('New Friend', style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700)),
+                child: Text(_isEditing ? 'Update Friend' : 'New Friend', style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(height: 4),
               Center(
-                child: Text('Fill in the details below', style: GoogleFonts.inter(fontSize: 13, color: scheme.onSurface.withOpacity(0.5))),
+                child: Text(_isEditing ? 'Edit the details below' : 'Fill in the details below', style: GoogleFonts.inter(fontSize: 13, color: scheme.onSurface.withOpacity(0.5))),
               ),
               const SizedBox(height: 32),
               AppTextField(
@@ -145,10 +179,10 @@ class _CreateFriendScreenState extends State<CreateFriendScreen> {
               ),
               const SizedBox(height: 36),
               AppButton(
-                label: 'Add Friend',
+                label: _isEditing ? 'Save Changes' : 'Add Friend',
                 isLoading: _loading,
                 onPressed: _save,
-                icon: Icons.person_add_outlined,
+                icon: _isEditing ? Icons.save_outlined : Icons.person_add_outlined,
               ),
             ],
           ),

@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:we_spilit/Screen/CreateGroupScreen.dart';
 import 'package:we_spilit/model/group_model.dart';
 import 'package:we_spilit/provider/friends_provider.dart';
+import 'package:we_spilit/Screen/GroupChatScreen.dart';
 
 class GroupsScreen extends StatelessWidget {
   @override
@@ -16,13 +19,6 @@ class GroupsScreen extends StatelessWidget {
             pinned: true,
             backgroundColor: scheme.primary,
             title: Text('Groups', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white)),
-            // actions: [
-            //   IconButton(
-            //     icon: const Icon(Icons.group_add_outlined, color: Colors.white),
-            //     onPressed: () => Navigator.push(context,
-            //         MaterialPageRoute(builder: (_) => const CreateGroupScreen())),
-            //   ),
-            // ],
           ),
           Consumer<FriendsProvider>(builder: (context, provider, _) {
             return SliverPadding(
@@ -82,6 +78,8 @@ class GroupsScreen extends StatelessWidget {
 
   Widget _buildGroupCard(BuildContext context, GroupModel group, FriendsProvider provider) {
     final scheme = Theme.of(context).colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
     return Dismissible(
       key: Key(group.groupId),
       direction: DismissDirection.endToStart,
@@ -97,55 +95,92 @@ class GroupsScreen extends StatelessWidget {
       },
       background: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.red.shade400,
-          borderRadius: BorderRadius.circular(16),
-        ),
+        decoration: BoxDecoration(color: Colors.red.shade400, borderRadius: BorderRadius.circular(16)),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
         child: const Icon(Icons.delete_outline, color: Colors.white, size: 26),
       ),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [scheme.primary, scheme.secondary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(14),
+      // ── StreamBuilder on messages subcollection: counts docs where unreadBy contains current uid ──
+      child: uid == null
+          ? _buildTile(context, group, provider, scheme, 0)
+          : StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('groups')
+                  .doc(group.groupId)
+                  .collection('messages')
+                  .where('unreadBy', arrayContains: uid)
+                  .snapshots(),
+              builder: (context, msgSnapshot) {
+                final unreadCount = msgSnapshot.data?.docs.length ?? 0;
+                return _buildTile(context, group, provider, scheme, unreadCount);
+              },
             ),
-            child: const Icon(Icons.group, color: Colors.white, size: 24),
+    );
+  }
+
+  Widget _buildTile(
+    BuildContext context,
+    GroupModel group,
+    FriendsProvider provider,
+    ColorScheme scheme,
+    int unreadCount,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [scheme.primary, scheme.secondary],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
           ),
-          title: Text(group.groupName, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-          subtitle: Row(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: scheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(group.groupType, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: scheme.primary)),
-              ),
-              const SizedBox(width: 8),
-              Text('${group.friends.length} members', style: GoogleFonts.inter(fontSize: 12, color: scheme.onSurface.withOpacity(0.45))),
-            ],
-          ),
-          trailing: Icon(Icons.chevron_right, color: scheme.onSurface.withOpacity(0.3)),
-          onTap: () => _showGroupDetails(context, group, provider),
+          child: const Icon(Icons.group, color: Colors.white, size: 24),
         ),
+        title: Text(group.groupName, style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: !group.isActive ? scheme.onSurface.withOpacity(0.5) : null)),
+        subtitle: Row(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: group.isActive ? scheme.primary.withOpacity(0.1) : Colors.red.shade400.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(group.isActive ? group.groupType : 'Inactive', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: group.isActive ? scheme.primary : Colors.red.shade400)),
+            ),
+            const SizedBox(width: 8),
+            Text('${group.friends.length} members', style: GoogleFonts.inter(fontSize: 12, color: scheme.onSurface.withOpacity(0.45))),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (unreadCount > 0)
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                child: Text(
+                  unreadCount > 99 ? '99+' : unreadCount.toString(),
+                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+            if (unreadCount > 0) const SizedBox(width: 8),
+            Icon(Icons.chevron_right, color: scheme.onSurface.withOpacity(0.3)),
+          ],
+        ),
+        onTap: () => _showGroupDetails(context, group, provider),
+        onLongPress: group.isActive ? () => _markGroupAsRead(context, group.groupId) : null,
       ),
     );
   }
@@ -163,44 +198,55 @@ class GroupsScreen extends StatelessWidget {
         ),
       );
 
-  void _showGroupDetails(BuildContext context, GroupModel group, FriendsProvider provider) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-    final names = <String>[];
-    for (final id in group.friends) {
-      final name = await provider.getFriendNameById(id);
-      names.add(name ?? 'Unknown');
-    }
-    if (!context.mounted) return;
-    Navigator.pop(context);
-    showDialog(
+  void _showGroupDetails(BuildContext context, GroupModel group, FriendsProvider provider) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => GroupChatScreen(group: group)));
+  }
+
+  void _markGroupAsRead(BuildContext context, String groupId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(group.groupName, style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Type: ${group.groupType}', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 10),
-            Text('Members:', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 6),
-            ...names.map((n) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(children: [
-                    const Icon(Icons.person_outline, size: 16),
-                    const SizedBox(width: 6),
-                    Text(n, style: GoogleFonts.inter()),
-                  ]),
-                )),
-          ],
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('Close', style: GoogleFonts.inter(fontWeight: FontWeight.w600)))],
+        title: Text('Mark as Read?', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+        content: Text('Mark all messages in this group as read?', style: GoogleFonts.inter()),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: GoogleFonts.inter())),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text('Mark Read', style: GoogleFonts.inter(color: Theme.of(context).colorScheme.primary))),
+        ],
       ),
     );
+
+    if (confirm != true) return;
+
+    final snapshot =
+        await FirebaseFirestore.instance.collection('groups').doc(groupId).collection('messages').where('unreadBy', arrayContains: uid).get();
+
+    if (snapshot.docs.isNotEmpty) {
+      final batch = FirebaseFirestore.instance.batch();
+      for (final doc in snapshot.docs) {
+        batch.update(doc.reference, {
+          'unreadBy': FieldValue.arrayRemove([uid])
+        });
+      }
+      batch.update(FirebaseFirestore.instance.collection('groups').doc(groupId), {
+        'unreadCounts.$uid': 0,
+      });
+      await batch.commit();
+    } else {
+      await FirebaseFirestore.instance.collection('groups').doc(groupId).update({
+        'unreadCounts.$uid': 0,
+      });
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Marked as read', style: GoogleFonts.inter()), behavior: SnackBarBehavior.floating),
+      );
+    }
   }
 }

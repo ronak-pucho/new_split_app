@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:we_spilit/ThemeProvider.dart';
+import 'package:we_spilit/Screen/PrivacyPolicyScreen.dart';
+import 'package:we_spilit/Screen/TermsOfServiceScreen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -43,16 +45,18 @@ class SettingsScreen extends StatelessWidget {
           _sectionLabel(context, 'Notifications'),
           _card(context, [
             SwitchListTile.adaptive(
-              secondary: Icon(Icons.notifications_outlined, color: scheme.primary),
+              secondary:
+                  Icon(Icons.notifications_outlined, color: scheme.primary),
               title: Text('Push Notifications',
                   style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
               subtitle: Text('Expense alerts & reminders',
                   style: GoogleFonts.inter(fontSize: 12)),
-              value: true,
+              value: false,
               activeColor: scheme.primary,
               onChanged: (_) {},
             ),
-            Divider(height: 1, indent: 56, color: Theme.of(context).dividerColor),
+            Divider(
+                height: 1, indent: 56, color: Theme.of(context).dividerColor),
             SwitchListTile.adaptive(
               secondary: Icon(Icons.mail_outline, color: scheme.primary),
               title: Text('Email Notifications',
@@ -67,11 +71,33 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _sectionLabel(context, 'About'),
           _card(context, [
-            _infoTile(context, Icons.info_outline, 'App Version', '1.0.0'),
-            Divider(height: 1, indent: 56, color: Theme.of(context).dividerColor),
-            _infoTile(context, Icons.privacy_tip_outlined, 'Privacy Policy', ''),
-            Divider(height: 1, indent: 56, color: Theme.of(context).dividerColor),
-            _infoTile(context, Icons.description_outlined, 'Terms of Service', ''),
+            _infoTile(context, Icons.info_outline, 'App Version', '3.5.1'),
+            Divider(
+                height: 1, indent: 56, color: Theme.of(context).dividerColor),
+            _navTile(
+              context,
+              icon: Icons.privacy_tip_outlined,
+              title: 'Privacy Policy',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PrivacyPolicyScreen(),
+                ),
+              ),
+            ),
+            Divider(
+                height: 1, indent: 56, color: Theme.of(context).dividerColor),
+            _navTile(
+              context,
+              icon: Icons.description_outlined,
+              title: 'Terms of Service',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const TermsOfServiceScreen(),
+                ),
+              ),
+            ),
           ]),
           const SizedBox(height: 40),
         ],
@@ -110,16 +136,34 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoTile(BuildContext context, IconData icon, String title, String trailing) {
+  Widget _infoTile(
+      BuildContext context, IconData icon, String title, String trailing) {
     return ListTile(
-      leading: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 22),
+      leading:
+          Icon(icon, color: Theme.of(context).colorScheme.primary, size: 22),
       title: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
       trailing: trailing.isNotEmpty
           ? Text(trailing,
               style: GoogleFonts.inter(
                   fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)))
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.5)))
           : const Icon(Icons.chevron_right, size: 20),
+    );
+  }
+
+  Widget _navTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading:
+          Icon(icon, color: Theme.of(context).colorScheme.primary, size: 22),
+      title: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+      trailing: const Icon(Icons.chevron_right, size: 20),
+      onTap: onTap,
     );
   }
 }

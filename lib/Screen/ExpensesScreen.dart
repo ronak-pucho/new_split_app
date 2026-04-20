@@ -197,6 +197,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         ),
         actions: [
           TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => AddExpenseScreen(expense: expense)),
+              );
+            },
+            child: Text('Edit', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text('Close', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
           ),

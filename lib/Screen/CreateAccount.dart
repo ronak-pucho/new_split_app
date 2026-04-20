@@ -45,7 +45,8 @@ class _CreateAccountState extends State<CreateAccount> {
     try {
       final authProvider = context.read<AuthenticateProvider>();
       final userProvider = context.read<UserProvider>();
-      final user = await authProvider.createEmailAccount(_emailCtrl.text.trim(), _passCtrl.text);
+      final user = await authProvider.createEmailAccount(
+          _emailCtrl.text.trim(), _passCtrl.text);
       if (user != null) {
         await userProvider.setUserData(
           id: user.uid,
@@ -55,13 +56,17 @@ class _CreateAccountState extends State<CreateAccount> {
           category: _category ?? 'Other',
         );
         if (!mounted) return;
-        context.read<AdminProvider>().logUserAction(user.uid, user.email, 'user_registered');
+        context
+            .read<AdminProvider>()
+            .logUserAction(user.uid, user.email, 'user_registered');
 
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Account created! Welcome 🎉', style: GoogleFonts.inter()),
+          content:
+              Text('Account created! Welcome 🎉', style: GoogleFonts.inter()),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ));
         await Future.delayed(const Duration(milliseconds: 600));
         if (!mounted) return;
@@ -89,44 +94,45 @@ class _CreateAccountState extends State<CreateAccount> {
     }
   }
 
-  Future<void> _googleSignIn() async {
-    setState(() => _loading = true);
-    try {
-      final authProvider = context.read<AuthenticateProvider>();
-      final userProvider = context.read<UserProvider>();
-      final friendsProvider = context.read<FriendsProvider>();
-      final cred = await authProvider.loginWithGoogle();
-      final user = cred?.user;
-      if (user != null) {
-        await userProvider.setUserData(
-          id: user.uid,
-          userName: user.displayName ?? '',
-          userEmail: user.email ?? '',
-        );
-        await friendsProvider.getAllFriends();
-        if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => MainScreen()),
-          (route) => false,
-        );
-      }
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Google sign-in failed.', style: GoogleFonts.inter()),
-        backgroundColor: AppColors.error,
-        behavior: SnackBarBehavior.floating,
-      ));
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
+  // Future<void> _googleSignIn() async {
+  //   setState(() => _loading = true);
+  //   try {
+  //     final authProvider = context.read<AuthenticateProvider>();
+  //     final userProvider = context.read<UserProvider>();
+  //     final friendsProvider = context.read<FriendsProvider>();
+  //     final cred = await authProvider.loginWithGoogle();
+  //     final user = cred?.user;
+  //     if (user != null) {
+  //       await userProvider.setUserData(
+  //         id: user.uid,
+  //         userName: user.displayName ?? '',
+  //         userEmail: user.email ?? '',
+  //       );
+  //       await friendsProvider.getAllFriends();
+  //       if (!mounted) return;
+  //       Navigator.pushAndRemoveUntil(
+  //         context,
+  //         MaterialPageRoute(builder: (_) => MainScreen()),
+  //         (route) => false,
+  //       );
+  //     }
+  //   } catch (_) {
+  //     if (!mounted) return;
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //       content: Text('Google sign-in failed.', style: GoogleFonts.inter()),
+  //       backgroundColor: AppColors.error,
+  //       behavior: SnackBarBehavior.floating,
+  //     ));
+  //   } finally {
+  //     if (mounted) setState(() => _loading = false);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
     final catProv = context.watch<CategoryProvider>();
-    final availableCats = catProv.categories.map((c) => c.categoryName).toList();
+    final availableCats =
+        catProv.categories.map((c) => c.categoryName).toList();
     if (availableCats.isNotEmpty && _category == null) {
       _category = availableCats.first;
     }
@@ -138,7 +144,8 @@ class _CreateAccountState extends State<CreateAccount> {
           Container(
             height: 200,
             decoration: BoxDecoration(
-              gradient: isDark ? AppColors.darkGradient : AppColors.primaryGradient,
+              gradient:
+                  isDark ? AppColors.darkGradient : AppColors.primaryGradient,
             ),
           ),
           SafeArea(
@@ -148,9 +155,15 @@ class _CreateAccountState extends State<CreateAccount> {
                 children: [
                   const SizedBox(height: 30),
                   // Header
-                  Text('Create Account', style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
+                  Text('Create Account',
+                      style: GoogleFonts.inter(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white)),
                   const SizedBox(height: 4),
-                  Text('Join We Split today', style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
+                  Text('Join We Split today',
+                      style: GoogleFonts.inter(
+                          fontSize: 13, color: Colors.white70)),
                   const SizedBox(height: 32),
                   // Card
                   Container(
@@ -158,7 +171,12 @@ class _CreateAccountState extends State<CreateAccount> {
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(24),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 30, offset: const Offset(0, 10))],
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10))
+                      ],
                     ),
                     child: Form(
                       key: _formKey,
@@ -192,13 +210,25 @@ class _CreateAccountState extends State<CreateAccount> {
                           const SizedBox(height: 16),
                           // Category dropdown
                           DropdownButtonFormField<String>(
-                            value: availableCats.contains(_category) ? _category : (availableCats.isNotEmpty ? availableCats.first : null),
+                            value: availableCats.contains(_category)
+                                ? _category
+                                : (availableCats.isNotEmpty
+                                    ? availableCats.first
+                                    : null),
                             decoration: InputDecoration(
                               labelText: 'Category',
-                              prefixIcon: Icon(Icons.category_outlined, color: Theme.of(context).colorScheme.primary, size: 20),
+                              prefixIcon: Icon(Icons.category_outlined,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 20),
                             ),
-                            items: availableCats.map((c) => DropdownMenuItem(value: c, child: Text(c, style: GoogleFonts.inter()))).toList(),
-                            onChanged: availableCats.isEmpty ? null : (v) => setState(() => _category = v),
+                            items: availableCats
+                                .map((c) => DropdownMenuItem(
+                                    value: c,
+                                    child: Text(c, style: GoogleFonts.inter())))
+                                .toList(),
+                            onChanged: availableCats.isEmpty
+                                ? null
+                                : (v) => setState(() => _category = v),
                           ),
                           const SizedBox(height: 16),
                           AppTextField(
@@ -210,10 +240,13 @@ class _CreateAccountState extends State<CreateAccount> {
                             textInputAction: TextInputAction.done,
                             suffix: IconButton(
                               icon: Icon(
-                                _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                _obscure
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
                                 size: 20,
                               ),
-                              onPressed: () => setState(() => _obscure = !_obscure),
+                              onPressed: () =>
+                                  setState(() => _obscure = !_obscure),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -241,11 +274,18 @@ class _CreateAccountState extends State<CreateAccount> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Already have an account?', style: GoogleFonts.inter(fontSize: 13)),
+                      Text('Already have an account?',
+                          style: GoogleFonts.inter(fontSize: 13)),
                       TextButton(
-                        onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+                        onPressed: () => Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const LoginScreen())),
                         child: Text('Sign In',
-                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary)),
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Theme.of(context).colorScheme.primary)),
                       ),
                     ],
                   ),

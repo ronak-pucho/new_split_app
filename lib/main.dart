@@ -12,6 +12,8 @@ import 'package:we_spilit/provider/search_provider.dart';
 import 'package:we_spilit/provider/user_provider.dart';
 import 'package:we_spilit/provider/category_provider.dart';
 
+import 'package:we_spilit/provider/group_type_provider.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -27,6 +29,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => GroupTypeProvider()),
       ],
       child: const WeSplitApp(),
     ),

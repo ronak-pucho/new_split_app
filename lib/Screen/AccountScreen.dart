@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:we_spilit/Screen/LoginScreen.dart';
 import 'package:we_spilit/Screen/SettingsScreen.dart';
+import 'package:we_spilit/Screen/SupportScreen.dart';
 import 'package:we_spilit/common/widgets/app_button.dart';
 import 'package:we_spilit/common/widgets/app_text_field.dart';
 import 'package:we_spilit/common/widgets/avatar_widget.dart';
@@ -133,6 +134,16 @@ class _AccountScreenState extends State<AccountScreen> {
                   const SizedBox(height: 12),
                   _actionTile(
                     context,
+                    icon: Icons.support_agent_outlined,
+                    label: 'Help & Support Chat',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SupportScreen()),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _actionTile(
+                    context,
                     icon: Icons.settings_outlined,
                     label: 'Settings',
                     onTap: () => Navigator.push(
@@ -248,6 +259,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final user = context.read<UserProvider>().currentUser;
     final nameCtrl = TextEditingController(text: user?.userName ?? '');
     final phoneCtrl = TextEditingController(text: user?.phoneNumber ?? '');
+    final formKey = GlobalKey<FormState>();
 
     String? selectedCat = user?.category;
     if (selectedCat == null || !availableCats.contains(selectedCat)) {
@@ -262,41 +274,64 @@ class _AccountScreenState extends State<AccountScreen> {
         return StatefulBuilder(builder: (ctx, setBS) {
           return Padding(
             padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text('Edit Profile', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700)),
-                    const Spacer(),
-                    IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                AppTextField(controller: nameCtrl, label: 'Full Name', prefixIcon: Icons.person_outline),
-                const SizedBox(height: 12),
-                AppTextField(controller: phoneCtrl, label: 'Phone', prefixIcon: Icons.phone_outlined, keyboardType: TextInputType.phone),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: availableCats.contains(selectedCat) ? selectedCat : (availableCats.isNotEmpty ? availableCats.first : null),
-                  decoration: const InputDecoration(labelText: 'Category'),
-                  items: availableCats.map((c) => DropdownMenuItem(value: c, child: Text(c, style: GoogleFonts.inter()))).toList(),
-                  onChanged: availableCats.isEmpty ? null : (v) => setBS(() => selectedCat = v),
-                ),
-                const SizedBox(height: 20),
-                AppButton(
-                  label: 'Save Changes',
-                  onPressed: () async {
-                    Navigator.pop(ctx);
-                    await context.read<UserProvider>().updateProfile(
-                          userName: nameCtrl.text.trim(),
-                          phoneNumber: phoneCtrl.text.trim(),
-                          category: selectedCat ?? 'Other',
-                        );
-                  },
-                ),
-              ],
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text('Edit Profile', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700)),
+                      const Spacer(),
+                      IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  AppTextField(
+                    controller: nameCtrl, 
+                    label: 'Full Name', 
+                    prefixIcon: Icons.person_outline,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Full Name is required';
+                      if (RegExp(r'[0-9]').hasMatch(v)) return 'Full Name cannot contain numbers';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  AppTextField(
+                    controller: phoneCtrl, 
+                    label: 'Phone', 
+                    prefixIcon: Icons.phone_outlined, 
+                    keyboardType: TextInputType.phone,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Phone number is required';
+                      if (!RegExp(r'^\d{10}$').hasMatch(v.trim())) return 'Phone number must be exactly 10 digits';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: availableCats.contains(selectedCat) ? selectedCat : (availableCats.isNotEmpty ? availableCats.first : null),
+                    decoration: const InputDecoration(labelText: 'Category'),
+                    items: availableCats.map((c) => DropdownMenuItem(value: c, child: Text(c, style: GoogleFonts.inter()))).toList(),
+                    onChanged: availableCats.isEmpty ? null : (v) => setBS(() => selectedCat = v),
+                  ),
+                  const SizedBox(height: 20),
+                  AppButton(
+                    label: 'Save Changes',
+                    onPressed: () async {
+                      if (!formKey.currentState!.validate()) return;
+                      Navigator.pop(ctx);
+                      await context.read<UserProvider>().updateProfile(
+                            userName: nameCtrl.text.trim(),
+                            phoneNumber: phoneCtrl.text.trim(),
+                            category: selectedCat ?? 'Other',
+                          );
+                    },
+                  ),
+                ],
+              ),
             ),
           );
         });

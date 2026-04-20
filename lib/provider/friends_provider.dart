@@ -32,6 +32,17 @@ class FriendsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateFriend({required FriendsModel friendsModel}) async {
+    await FirebaseFirestore.instance.collection('friends').doc(friendsModel.fId).update({
+      'fName': friendsModel.fName,
+      'lName': friendsModel.lName,
+      'fPhoneNumber': friendsModel.fPhoneNumber,
+      'fUpiId': friendsModel.fUpiId,
+    });
+    await getAllFriends();
+    notifyListeners();
+  }
+
   Future<void> getAllFriends() async {
     final getFriends =
         await FirebaseFirestore.instance.collection('friends').where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid).get();
@@ -74,8 +85,18 @@ class FriendsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateFirebaseGroupData(GroupModel groupModel) async {
+    await FirebaseFirestore.instance.collection('groups').doc(groupModel.groupId).update(groupModel.toJson());
+    notifyListeners();
+  }
+
   Stream<List<GroupModel>?> getGroupData() {
-    return FirebaseFirestore.instance.collection('groups').snapshots().asyncMap(
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return const Stream.empty();
+    
+    return FirebaseFirestore.instance.collection('groups')
+      .where('friends', arrayContains: uid)
+      .snapshots().asyncMap(
       (event) {
         if (event.docs.isNotEmpty) {
           return event.docs.map((e) => GroupModel.fromJson(e.data())).toList();

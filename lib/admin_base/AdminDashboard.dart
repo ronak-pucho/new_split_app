@@ -5,8 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:we_spilit/Screen/LoginScreen.dart';
 import 'package:we_spilit/admin_base/AdminAnalyticsScreen.dart';
 import 'package:we_spilit/admin_base/AdminReportsScreen.dart';
-import 'package:we_spilit/admin_base/AdminSettingsScreen.dart';
 import 'package:we_spilit/admin_base/AdminUserListScreen.dart';
+import 'package:we_spilit/admin_base/AdminGroupsScreen.dart';
+import 'package:we_spilit/admin_base/AdminSettingsScreen.dart';
 import 'package:we_spilit/core/constants/app_colors.dart';
 import 'package:we_spilit/provider/admin_provider.dart';
 import 'package:we_spilit/provider/auth_provider.dart';
@@ -31,15 +32,42 @@ class _AdminDashboardState extends State<AdminDashboard> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminProvider>().fetchAllUsers();
-      context.read<AdminProvider>().fetchLogs();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final provider = context.read<AdminProvider>();
+      await provider.fetchAllUsers();
+      await provider.fetchLogs();
+      await provider.fetchRequests();
+      await provider.fetchAllGroups();
+      
+      if (mounted) {
+        final unreplied = provider.requests.where((r) => r.adminReply == null).toList();
+        if (unreplied.isNotEmpty) {
+          final Set<String> names = unreplied.map((r) => r.userName).toSet();
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text('Pending Replies', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppColors.error)),
+              content: Text('Please reply to pending messages from:\n\n${names.join('\n')}', style: GoogleFonts.inter()),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('OK', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                )
+              ]
+            )
+          );
+        }
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final adminProvider = context.watch<AdminProvider>();
+    final requestsCount = adminProvider.requests.length;
+
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -50,28 +78,38 @@ class _AdminDashboardState extends State<AdminDashboard> {
         unselectedItemColor: scheme.onSurface.withOpacity(0.4),
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_outlined),
             activeIcon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.people_outline),
-            activeIcon: Icon(Icons.people),
+            icon: Badge(
+              isLabelVisible: requestsCount > 0,
+              label: Text('$requestsCount'),
+              backgroundColor: AppColors.error,
+              child: const Icon(Icons.people_outline),
+            ),
+            activeIcon: Badge(
+              isLabelVisible: requestsCount > 0,
+              label: Text('$requestsCount'),
+              backgroundColor: AppColors.error,
+              child: const Icon(Icons.people),
+            ),
             label: 'Users',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart_outlined),
             activeIcon: Icon(Icons.bar_chart),
             label: 'Analytics',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),
             activeIcon: Icon(Icons.settings),
             label: 'Settings',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.article_outlined),
             activeIcon: Icon(Icons.article),
             label: 'Reports',
@@ -187,6 +225,25 @@ class _DashboardHome extends StatelessWidget {
                         color: AppColors.warning,
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminGroupsScreen())),
+                        child: _kpiCard(
+                          context,
+                          label: 'Groups',
+                          value: '${adminProvider.groups.length}',
+                          icon: Icons.group_outlined,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(child: const SizedBox()), // Empty slot for balance
                   ],
                 ),
                 const SizedBox(height: 24),

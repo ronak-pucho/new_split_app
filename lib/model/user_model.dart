@@ -5,8 +5,9 @@ class UserModel {
   String userEmail;
   String? phoneNumber;
   String? photoUrl;
-  String? category;       // Personal | Business | Student | Other
-  String status;          // active | inactive
+  String? category; // Personal | Business | Student | Other
+  String status; // active | inactive
+  String? userType; // active | inactive
   bool isAdmin;
   DateTime? createdAt;
 
@@ -17,6 +18,7 @@ class UserModel {
     this.phoneNumber,
     this.photoUrl,
     this.category,
+    this.userType,
     this.status = 'active',
     this.isAdmin = false,
     this.createdAt,
@@ -29,11 +31,10 @@ class UserModel {
         phoneNumber: json['phoneNumber'] as String?,
         photoUrl: json['photoUrl'] as String?,
         category: json['category'] as String?,
+        userType: json['userType'] as String?,
         status: json['status'] as String? ?? 'active',
         isAdmin: json['isAdmin'] as bool? ?? false,
-        createdAt: json['createdAt'] != null
-            ? DateTime.tryParse(json['createdAt'].toString())
-            : null,
+        createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
       );
 
   Map<String, dynamic> toJson() => {
@@ -43,6 +44,7 @@ class UserModel {
         'phoneNumber': phoneNumber,
         'photoUrl': photoUrl,
         'category': category,
+        'userType': userType,
         'status': status,
         'isAdmin': isAdmin,
         'createdAt': createdAt?.toIso8601String(),
@@ -54,6 +56,7 @@ class UserModel {
     String? photoUrl,
     String? category,
     String? status,
+    String? userType,
   }) =>
       UserModel(
         userId: userId,
@@ -65,5 +68,6 @@ class UserModel {
         status: status ?? this.status,
         isAdmin: isAdmin,
         createdAt: createdAt,
+        userType: userType ?? this.userType,
       );
 }

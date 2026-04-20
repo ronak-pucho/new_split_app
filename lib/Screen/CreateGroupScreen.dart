@@ -5,10 +5,15 @@ import 'package:we_spilit/common/widgets/app_button.dart';
 import 'package:we_spilit/common/widgets/app_text_field.dart';
 import 'package:we_spilit/core/constants/app_colors.dart';
 import 'package:we_spilit/model/group_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:we_spilit/model/user_model.dart';
 import 'package:we_spilit/provider/friends_provider.dart';
+import 'package:we_spilit/provider/group_type_provider.dart';
 
 class CreateGroupScreen extends StatefulWidget {
-  const CreateGroupScreen({super.key});
+  final GroupModel? group;
+  const CreateGroupScreen({super.key, this.group});
   @override
   State<CreateGroupScreen> createState() => _CreateGroupScreenState();
 }
@@ -18,18 +23,29 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   final _nameCtrl = TextEditingController();
   String? _selectedType;
   final List<String> _selectedFriends = [];
+  String _userSearchQuery = '';
   bool _loading = false;
 
-  static const _types = [
-    {'icon': Icons.home_outlined, 'label': 'Home'},
-    {'icon': Icons.flight_outlined, 'label': 'Trip'},
-    {'icon': Icons.people_outline, 'label': 'Friend'},
-    {'icon': Icons.fastfood_outlined, 'label': 'Foodie'},
-    {'icon': Icons.sports_esports_outlined, 'label': 'Buddy'},
-    {'icon': Icons.family_restroom_outlined, 'label': 'Family'},
-    {'icon': Icons.school_outlined, 'label': 'Study'},
-    {'icon': Icons.more_horiz, 'label': 'Other'},
-  ];
+  bool get _isEditing => widget.group != null;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<GroupTypeProvider>().fetchGroupTypes();
+    });
+    final g = widget.group;
+    if (g != null) {
+      _nameCtrl.text = g.groupName;
+      _selectedType = g.groupType;
+      _selectedFriends.addAll(g.friends);
+    } else {
+      final currentUid = FirebaseAuth.instance.currentUser?.uid;
+      if (currentUid != null) {
+        _selectedFriends.add(currentUid);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -49,18 +65,22 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     }
     setState(() => _loading = true);
     try {
-      final groupId = DateTime.now().millisecondsSinceEpoch.toString();
+      final groupId = _isEditing ? widget.group!.groupId : DateTime.now().millisecondsSinceEpoch.toString();
       final groupModel = GroupModel(
         groupId: groupId,
         groupName: _nameCtrl.text.trim(),
         groupType: _selectedType!,
         friends: _selectedFriends,
       );
-      await context.read<FriendsProvider>().setFirebaseGroupData(groupModel);
+      if (_isEditing) {
+        await context.read<FriendsProvider>().updateFirebaseGroupData(groupModel);
+      } else {
+        await context.read<FriendsProvider>().setFirebaseGroupData(groupModel);
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content:
-            Text('Group created successfully! 🎉', style: GoogleFonts.inter()),
+            Text(_isEditing ? 'Group updated successfully!' : 'Group created successfully! 🎉', style: GoogleFonts.inter()),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -69,7 +89,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Failed to create group.', style: GoogleFonts.inter()),
+        content: Text(_isEditing ? 'Failed to update group.' : 'Failed to create group.', style: GoogleFonts.inter()),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ));
@@ -83,7 +103,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create Group',
+        title: Text(_isEditing ? 'Edit Group' : 'Create Group',
             style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         leading: const BackButton(),
       ),
@@ -113,114 +133,194 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                       color: scheme.onSurface.withOpacity(0.55),
                       letterSpacing: 0.8)),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: _types.map((t) {
-                  final label = t['label'] as String;
-                  final icon = t['icon'] as IconData;
-                  final selected = _selectedType == label;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedType = label),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? scheme.primary
-                            : scheme.primary.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: selected
-                              ? scheme.primary
-                              : Colors.transparent,
-                          width: 1.5,
+              Consumer<GroupTypeProvider>(
+                builder: (ctx, gtProvider, _) {
+                  if (gtProvider.isLoading) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (gtProvider.groupTypes.isEmpty) {
+                    return Text('No group types available.', style: GoogleFonts.inter(color: scheme.onSurface.withOpacity(0.5)));
+                  }
+                  return Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: gtProvider.groupTypes.map((gt) {
+                      final label = gt.name;
+                      final selected = _selectedType == label;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedType = label),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? scheme.primary
+                                : scheme.primary.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: selected
+                                  ? scheme.primary
+                                  : Colors.transparent,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.label_outline,
+                                  size: 18,
+                                  color: selected ? Colors.white : scheme.primary),
+                              const SizedBox(width: 6),
+                              Text(label,
+                                  style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: selected
+                                          ? Colors.white
+                                          : scheme.primary)),
+                            ],
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(icon,
-                              size: 18,
-                              color: selected ? Colors.white : scheme.primary),
-                          const SizedBox(width: 6),
-                          Text(label,
-                              style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: selected
-                                      ? Colors.white
-                                      : scheme.primary)),
-                        ],
-                      ),
-                    ),
+                      );
+                    }).toList(),
                   );
-                }).toList(),
+                }
               ),
               const SizedBox(height: 24),
 
               // Friend selector
-              Text('Add Friends',
+              Text('Add Members',
                   style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: scheme.onSurface.withOpacity(0.55),
                       letterSpacing: 0.8)),
               const SizedBox(height: 8),
-              Consumer<FriendsProvider>(builder: (ctx, provider, _) {
-                final friends = provider.getFriend();
-                if (friends.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No friends yet. Add friends first.',
-                        style: GoogleFonts.inter(
-                            color: scheme.onSurface.withOpacity(0.4))),
+
+              // Search input
+              TextField(
+                onChanged: (v) => setState(() => _userSearchQuery = v.trim().toLowerCase()),
+                style: GoogleFonts.inter(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Search users by name or email...',
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  filled: true,
+                  fillColor: scheme.onSurface.withOpacity(0.04),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('users')
+                    .where('userType', isEqualTo: 'user')
+                    .where('status', isEqualTo: 'active')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text('No active users found on the platform.', style: GoogleFonts.inter(color: scheme.onSurface.withOpacity(0.4))),
+                    );
+                  }
+
+                  final currentUid = FirebaseAuth.instance.currentUser?.uid;
+                  final rawUsers = snapshot.data!.docs.map((d) => UserModel.fromJson(d.data() as Map<String, dynamic>)).toList();
+                  
+                  UserModel? me;
+                  if (currentUid != null) {
+                    try { me = rawUsers.firstWhere((u) => u.userId == currentUid); } catch(_) {}
+                  }
+
+                  final otherUsers = rawUsers
+                    .where((u) => u.userId != currentUid) 
+                    .where((u) => 
+                       u.userName.toLowerCase().contains(_userSearchQuery) || 
+                       u.userEmail.toLowerCase().contains(_userSearchQuery))
+                    .toList();
+
+                  final displayUsers = <UserModel>[];
+                  if (me != null && (me.userName.toLowerCase().contains(_userSearchQuery) || me.userEmail.toLowerCase().contains(_userSearchQuery) || _userSearchQuery.isEmpty)) {
+                     displayUsers.add(me);
+                  }
+                  displayUsers.addAll(otherUsers);
+
+                  if (displayUsers.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text('No matching users found.', style: GoogleFonts.inter(color: scheme.onSurface.withOpacity(0.4))),
+                    );
+                  }
+
+                  return Container(
+                    constraints: const BoxConstraints(maxHeight: 320),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3))
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: displayUsers.map((u) {
+                          final isMe = u.userId == currentUid;
+                          final checked = isMe ? true : _selectedFriends.contains(u.userId);
+
+                          return CheckboxListTile.adaptive(
+                          title: Text(isMe ? '${u.userName} (You)' : u.userName,
+                              style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600)),
+                          subtitle: Text(u.userEmail,
+                              style:
+                                  GoogleFonts.inter(fontSize: 12, color: scheme.onSurface.withOpacity(0.5))),
+                          secondary: CircleAvatar(
+                            radius: 16,
+                            backgroundColor: scheme.primary.withOpacity(0.15),
+                            backgroundImage: u.photoUrl != null && u.photoUrl!.isNotEmpty ? NetworkImage(u.photoUrl!) : null,
+                            child: u.photoUrl == null || u.photoUrl!.isEmpty ? Text(
+                              u.userName.isNotEmpty ? u.userName[0].toUpperCase() : '?',
+                              style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w600, fontSize: 13),
+                            ) : null,
+                          ),
+                          value: checked,
+                          activeColor: scheme.primary,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          onChanged: isMe ? null : (val) => setState(() {
+                            if (val == true) {
+                              _selectedFriends.add(u.userId);
+                            } else {
+                              _selectedFriends.remove(u.userId);
+                            }
+                          }),
+                        );
+                      }).toList(),
+                      ),
+                    ),
                   );
                 }
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3))
-                    ],
-                  ),
-                  child: Column(
-                    children: friends.map((f) {
-                      final checked = _selectedFriends.contains(f.fId);
-                      return CheckboxListTile.adaptive(
-                        title: Text('${f.fName} ${f.lName}',
-                            style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w500)),
-                        subtitle: Text(f.fPhoneNumber,
-                            style:
-                                GoogleFonts.inter(fontSize: 12)),
-                        value: checked,
-                        activeColor: scheme.primary,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        onChanged: (val) => setState(() {
-                          if (val == true) {
-                            _selectedFriends.add(f.fId);
-                          } else {
-                            _selectedFriends.remove(f.fId);
-                          }
-                        }),
-                      );
-                    }).toList(),
-                  ),
-                );
-              }),
+              ),
               const SizedBox(height: 32),
               AppButton(
-                label: 'Create Group',
+                label: _isEditing ? 'Save Changes' : 'Create Group',
                 isLoading: _loading,
                 onPressed: _createGroup,
-                icon: Icons.group_add_outlined,
+                icon: _isEditing ? Icons.save_outlined : Icons.group_add_outlined,
               ),
               const SizedBox(height: 24),
             ],

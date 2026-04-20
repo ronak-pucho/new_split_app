@@ -18,12 +18,13 @@ class Validators {
   static String? name(String? value) {
     if (value == null || value.trim().isEmpty) return 'Name is required.';
     if (value.trim().length < 2) return 'Name must be at least 2 characters.';
+    if (RegExp(r'[0-9]').hasMatch(value)) return 'Name cannot contain numbers.';
     return null;
   }
 
   static String? phone(String? value) {
     if (value == null || value.trim().isEmpty) return null; // optional
-    if (!RegExp(r'^\+?[0-9]{7,15}$').hasMatch(value.trim())) {
+    if (!RegExp(r'^\+?[0-9]{10}$').hasMatch(value.trim())) {
       return 'Enter a valid phone number.';
     }
     return null;
