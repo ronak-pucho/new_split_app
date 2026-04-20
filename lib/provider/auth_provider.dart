@@ -12,7 +12,6 @@ import 'package:we_spilit/provider/user_provider.dart';
 class AuthenticateProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-
   // ─────────────────────────────────────────────
   // 🔹 Create account with email
   // ─────────────────────────────────────────────
@@ -27,8 +26,7 @@ class AuthenticateProvider extends ChangeNotifier {
   // ─────────────────────────────────────────────
   // 🔹 Sign in with email & password
   // ─────────────────────────────────────────────
-  Future<void> signInEmailPassword(
-      BuildContext context, String email, String password) async {
+  Future<void> signInEmailPassword(BuildContext context, String email, String password) async {
     try {
       final credential = await _auth.signInWithEmailAndPassword(
         email: email,
