@@ -38,25 +38,23 @@ class _AdminDashboardState extends State<AdminDashboard> {
       await provider.fetchLogs();
       await provider.fetchRequests();
       await provider.fetchAllGroups();
-      
+
       if (mounted) {
         final unreplied = provider.requests.where((r) => r.adminReply == null).toList();
         if (unreplied.isNotEmpty) {
           final Set<String> names = unreplied.map((r) => r.userName).toSet();
           showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: Text('Pending Replies', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppColors.error)),
-              content: Text('Please reply to pending messages from:\n\n${names.join('\n')}', style: GoogleFonts.inter()),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('OK', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                )
-              ]
-            )
-          );
+              context: context,
+              builder: (_) => AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      title: Text('Pending Replies', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppColors.error)),
+                      content: Text('Please reply to pending messages from:\n\n${names.join('\n')}', style: GoogleFonts.inter()),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text('OK', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                        )
+                      ]));
         }
       }
     });
@@ -148,24 +146,16 @@ class _DashboardHome extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 12),
-                        Text('Admin Panel',
-                            style: GoogleFonts.inter(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white)),
+                        Text('Admin Panel', style: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
                         const SizedBox(height: 4),
-                        Text('We Split — Control Center',
-                            style: GoogleFonts.inter(
-                                fontSize: 13, color: Colors.white70)),
+                        Text('We Split — Control Center', style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
                       ],
                     ),
                   ),
                 ),
               ),
             ),
-            title: Text('Dashboard',
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700, color: Colors.white)),
+            title: Text('Dashboard', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white)),
             actions: [
               IconButton(
                 icon: const Icon(Icons.logout, color: Colors.white),
@@ -209,8 +199,7 @@ class _DashboardHome extends StatelessWidget {
                       child: _kpiCard(
                         context,
                         label: 'Categories',
-                        value:
-                            '${adminProvider.categoryDistribution.keys.length}',
+                        value: '${adminProvider.categoryDistribution.keys.length}',
                         icon: Icons.category_outlined,
                         color: AppColors.accent,
                       ),
@@ -249,26 +238,17 @@ class _DashboardHome extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // ── Category breakdown ───────────────────────────────────
-                Text('User Categories',
-                    style: GoogleFonts.inter(
-                        fontSize: 16, fontWeight: FontWeight.w700)),
+                Text('User Categories', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 12),
                 ...adminProvider.categoryDistribution.entries.map((e) {
-                  final pct = adminProvider.totalUsers > 0
-                      ? e.value / adminProvider.totalUsers
-                      : 0.0;
+                  final pct = adminProvider.totalUsers > 0 ? e.value / adminProvider.totalUsers : 0.0;
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3))
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 3))],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,25 +256,16 @@ class _DashboardHome extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(e.key,
-                                style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w600)),
+                            Text(e.key, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
                             Text('${e.value} users',
-                                style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withOpacity(0.5))),
+                                style: GoogleFonts.inter(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
                           ],
                         ),
                         const SizedBox(height: 8),
                         LinearProgressIndicator(
                           value: pct,
-                          backgroundColor:
-                              const Color(0xFF7B1FA2).withOpacity(0.1),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                              Color(0xFF7B1FA2)),
+                          backgroundColor: const Color(0xFF7B1FA2).withOpacity(0.1),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF7B1FA2)),
                           minHeight: 6,
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -305,9 +276,7 @@ class _DashboardHome extends StatelessWidget {
 
                 const SizedBox(height: 24),
                 // ── Recent Users ─────────────────────────────────────────
-                Text('Recent Users',
-                    style: GoogleFonts.inter(
-                        fontSize: 16, fontWeight: FontWeight.w700)),
+                Text('Recent Users', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 12),
                 ...adminProvider.users.take(5).map((u) => Container(
                       margin: const EdgeInsets.only(bottom: 10),
@@ -315,25 +284,16 @@ class _DashboardHome extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 8)
-                        ],
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
                       ),
                       child: Row(
                         children: [
                           CircleAvatar(
                             radius: 22,
-                            backgroundColor:
-                                const Color(0xFF7B1FA2).withOpacity(0.15),
+                            backgroundColor: const Color(0xFF7B1FA2).withOpacity(0.15),
                             child: Text(
-                              u.userName.isNotEmpty
-                                  ? u.userName[0].toUpperCase()
-                                  : '?',
-                              style: const TextStyle(
-                                  color: Color(0xFF7B1FA2),
-                                  fontWeight: FontWeight.w700),
+                              u.userName.isNotEmpty ? u.userName[0].toUpperCase() : '?',
+                              style: const TextStyle(color: Color(0xFF7B1FA2), fontWeight: FontWeight.w700),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -341,36 +301,22 @@ class _DashboardHome extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(u.userName,
-                                    style: GoogleFonts.inter(
-                                        fontWeight: FontWeight.w600)),
+                                Text(u.userName, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
                                 Text(u.userEmail,
-                                    style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withOpacity(0.5))),
+                                    style: GoogleFonts.inter(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
                               ],
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: u.status == 'active'
-                                  ? AppColors.success.withOpacity(0.15)
-                                  : Colors.grey.withOpacity(0.15),
+                              color: u.status == 'active' ? AppColors.success.withOpacity(0.15) : Colors.grey.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               u.status,
                               style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: u.status == 'active'
-                                      ? AppColors.success
-                                      : Colors.grey),
+                                  fontSize: 11, fontWeight: FontWeight.w600, color: u.status == 'active' ? AppColors.success : Colors.grey),
                             ),
                           ),
                         ],
@@ -385,22 +331,19 @@ class _DashboardHome extends StatelessWidget {
     );
   }
 
-  Widget _kpiCard(BuildContext context,
-      {required String label,
-      required String value,
-      required IconData icon,
-      required Color color}) {
+  Widget _kpiCard(BuildContext context, {required String label, required String value, required IconData icon, required Color color}) {
+    String displayValue = value;
+    int? numericValue = int.tryParse(value);
+    if (numericValue != null && numericValue > 500) {
+      displayValue = '500+';
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.07),
-              blurRadius: 12,
-              offset: const Offset(0, 4))
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 12, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,17 +358,9 @@ class _DashboardHome extends StatelessWidget {
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(height: 12),
-          Text(value,
-              style: GoogleFonts.inter(
-                  fontSize: 24, fontWeight: FontWeight.w800, color: color)),
+          Text(displayValue, style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 2),
-          Text(label,
-              style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withOpacity(0.5))),
+          Text(label, style: GoogleFonts.inter(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
         ],
       ),
     );
@@ -436,13 +371,10 @@ class _DashboardHome extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Logout?',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+        title: Text('Logout?', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         content: Text('Exit the admin panel.', style: GoogleFonts.inter()),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: GoogleFonts.inter())),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: GoogleFonts.inter())),
           TextButton(
             onPressed: () async {
               final nav = Navigator.of(context);
@@ -456,9 +388,7 @@ class _DashboardHome extends StatelessWidget {
                 (route) => false,
               );
             },
-            child: Text('Logout',
-                style: GoogleFonts.inter(
-                    color: AppColors.error, fontWeight: FontWeight.w600)),
+            child: Text('Logout', style: GoogleFonts.inter(color: AppColors.error, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

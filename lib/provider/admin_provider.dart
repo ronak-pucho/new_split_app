@@ -95,7 +95,7 @@ class AdminProvider extends ChangeNotifier {
 
   Future<void> fetchLogs() async {
     try {
-      final snap = await _db.collection('logs').orderBy('timestamp', descending: true).limit(100).get();
+      final snap = await _db.collection('logs').orderBy('timestamp', descending: true).get();
       _logs = snap.docs.map((d) => AdminLogModel.fromJson(d.data())).toList();
       notifyListeners();
     } catch (_) {}
